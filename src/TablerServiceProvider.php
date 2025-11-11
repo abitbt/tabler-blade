@@ -8,34 +8,77 @@ use Illuminate\Support\ServiceProvider;
 
 class TablerServiceProvider extends ServiceProvider
 {
-    public function register(): void {}
+    public function register(): void
+    {
+        $this->mergeConfigFrom(__DIR__.'/../config/tabler.php', 'tabler');
+    }
 
     public function boot(): void
     {
+        $this->bootPublishes();
         $this->bootViews();
         $this->bootComponentPath();
         $this->bootPagination();
     }
 
-    public function bootPagination(): void
+    protected function bootPublishes(): void
     {
-        Paginator::defaultView('tabler::pagination.default');
-        Paginator::defaultSimpleView('tabler::pagination.simple');
+        if ($this->app->runningInConsole()) {
+            // Publish config file
+            $this->publishes([
+                __DIR__.'/../config/tabler.php' => config_path('tabler.php'),
+            ], 'tabler-config');
+
+            // Publish views
+            $this->publishes([
+                __DIR__.'/../stubs/resources/views' => resource_path('views/vendor/tabler'),
+            ], 'tabler-views');
+
+            // Publish layouts
+            $this->publishes([
+                __DIR__.'/../stubs/resources/views/layouts' => resource_path('views/vendor/tabler/layouts'),
+            ], 'tabler-layouts');
+
+            // Publish pagination views
+            $this->publishes([
+                __DIR__.'/../stubs/resources/views/pagination' => resource_path('views/vendor/tabler/pagination'),
+            ], 'tabler-pagination');
+        }
     }
 
-    public function bootViews(): void
+    protected function bootPagination(): void
     {
-        $this->loadViewsFrom(__DIR__.'/../stubs/resources/views', 'tabler');
+        $defaultView = config('tabler.pagination.default');
+        $simpleView = config('tabler.pagination.simple');
+
+        if ($defaultView) {
+            Paginator::defaultView($defaultView);
+        }
+
+        if ($simpleView) {
+            Paginator::defaultSimpleView($simpleView);
+        }
     }
 
-    public function bootComponentPath(): void
+    protected function bootViews(): void
     {
+        $prefix = config('tabler.prefix', 'tabler');
+        $this->loadViewsFrom(__DIR__.'/../stubs/resources/views', $prefix);
+    }
+
+    protected function bootComponentPath(): void
+    {
+        $prefix = config('tabler.prefix', 'tabler');
+
         // Register package components
-        Blade::anonymousComponentPath(__DIR__.'/../stubs/resources/views/tabler', 'tabler');
+        Blade::anonymousComponentPath(__DIR__.'/../stubs/resources/views/tabler', $prefix);
 
         // Register user's custom tabler components (override package components)
-        if (file_exists(resource_path('views/tabler'))) {
-            Blade::anonymousComponentPath(resource_path('views/tabler'), 'tabler');
+        if (config('tabler.enable_overrides', true)) {
+            $componentPath = config('tabler.component_path', resource_path('views/tabler'));
+            if (file_exists($componentPath)) {
+                Blade::anonymousComponentPath($componentPath, $prefix);
+            }
         }
     }
 }
