@@ -137,7 +137,7 @@
 
 @php
     // Determine loading strategy
-    $loadingAttr = $lazy ? 'lazy' : ($loading ?? 'eager');
+    $loadingAttr = $lazy ? 'lazy' : $loading ?? 'eager';
 
     // Build classes based on mode
     $classes = [];
@@ -157,26 +157,21 @@
 @if ($responsive || $background)
     {{-- Responsive or background image mode (using div with background-image) --}}
     <div {{ $attributes->merge(['class' => implode(' ', $classes)]) }}
-         @if($src) style="background-image: url({{ $src }})" @endif>
+        @if ($src) style="background-image: url({{ $src }})" @endif>
         {{ $slot }}
     </div>
 @elseif ($src2x)
     {{-- High-DPI image with srcset --}}
     <picture>
-        <img src="{{ $src }}"
-             srcset="{{ $src }} 1x, {{ $src2x }} 2x"
-             alt="{{ $alt }}"
-             @if($width) width="{{ $width }}" @endif
-             @if($height) height="{{ $height }}" @endif
-             loading="{{ $loadingAttr }}"
-             {{ $attributes->merge(['class' => implode(' ', $classes)]) }} />
+        <img src="{{ $src }}" srcset="{{ $src }} 1x, {{ $src2x }} 2x" alt="{{ $alt }}"
+            @if ($width) width="{{ $width }}" @endif
+            @if ($height) height="{{ $height }}" @endif loading="{{ $loadingAttr }}"
+            {{ $attributes->merge(['class' => implode(' ', $classes)]) }} />
     </picture>
 @else
     {{-- Regular image --}}
-    <img src="{{ $src }}"
-         alt="{{ $alt }}"
-         @if($width) width="{{ $width }}" @endif
-         @if($height) height="{{ $height }}" @endif
-         loading="{{ $loadingAttr }}"
-         {{ $attributes->merge(['class' => implode(' ', $classes)]) }} />
+    <img src="{{ $src }}" alt="{{ $alt }}"
+        @if ($width) width="{{ $width }}" @endif
+        @if ($height) height="{{ $height }}" @endif loading="{{ $loadingAttr }}"
+        {{ $attributes->merge(['class' => implode(' ', $classes)]) }} />
 @endif

@@ -1,7 +1,13 @@
 {
     "name": "abitbt/tabler-blade",
     "description": "UI component library for tabler.",
-    "keywords": ["tabler", "laravel", "blade", "components", "ui"],
+    "keywords": [
+        "tabler",
+        "laravel",
+        "blade",
+        "components",
+        "ui"
+    ],
     "license": "MIT",
     "authors": [
         {
@@ -16,9 +22,25 @@
         "illuminate/view": "^10.0|^11.0|^12.0",
         "secondnetwork/blade-tabler-icons": "^3.35"
     },
+    "require-dev": {
+        "orchestra/testbench": "^9.0|^10.0",
+        "pestphp/pest": "^3.0|^4.0",
+        "pestphp/pest-plugin-laravel": "^3.0|^4.0"
+    },
     "autoload": {
         "psr-4": {
             "Abitbt\\TablerBlade\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Abitbt\\TablerBlade\\Tests\\": "tests/",
+            "Workbench\\App\\": "workbench/app/",
+            "Workbench\\Database\\Factories\\": "workbench/database/factories/",
+            "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"
         }
     },
     "extra": {
@@ -27,5 +49,27 @@
                 "Abitbt\\TablerBlade\\TablerServiceProvider"
             ]
         }
-    }
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/pest",
+        "post-autoload-dump": [
+            "@clear",
+            "@prepare"
+        ],
+        "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
+        "prepare": "@php vendor/bin/testbench package:discover --ansi",
+        "build": "@php vendor/bin/testbench workbench:build --ansi",
+        "serve": [
+            "Composer\\Config::disableProcessTimeout",
+            "@build",
+            "@php vendor/bin/testbench serve --ansi"
+        ]
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

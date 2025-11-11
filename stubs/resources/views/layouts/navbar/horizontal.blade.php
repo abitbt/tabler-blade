@@ -1,18 +1,18 @@
 {{--
-    Default Navbar Layout (Two-row)
+    Horizontal Navbar Layout (Two-row)
 
     A two-row horizontal navbar layout - the primary navigation pattern in Tabler.
     Top row: Logo + utilities (theme, notifications, user menu)
     Bottom row: Main navigation menu + search
 
     Configuration Variables:
-    @var bool $dark - Enable dark theme (default: false)
-    @var bool $sticky - Make navbar sticky on scroll (default: false)
-    @var bool $transparent - Transparent background (default: false)
-    @var bool $overlap - Navbar overlaps content (default: false)
-    @var string $breakpoint - Responsive breakpoint: sm, md, lg, xl (default: 'md')
-    @var bool $hideBrand - Hide logo/brand (default: false)
-    @var bool $hideSearch - Hide search bar (default: false)
+    @var bool $dark - Enable dark theme (default: from config)
+    @var bool $sticky - Make navbar sticky on scroll (default: from config)
+    @var bool $transparent - Transparent background (default: from config)
+    @var bool $overlap - Navbar overlaps content (default: from config)
+    @var string $breakpoint - Responsive breakpoint: sm, md, lg, xl (default: from config)
+    @var bool $hideBrand - Hide logo/brand (default: from config)
+    @var bool $hideSearch - Hide search bar (default: from config)
     @var bool $hideMenu - Hide navigation menu (default: false)
     @var string $background - Background color name (e.g., 'primary', 'dark')
     @var string $customClass - Additional CSS classes
@@ -20,19 +20,19 @@
     Usage Examples:
 
     Basic navbar (light theme):
-    @include('tabler::layouts.navbar.default')
+    @include('tabler::layouts.navbar.horizontal')
 
     Dark navbar:
-    @include('tabler::layouts.navbar.default', ['dark' => true])
+    @include('tabler::layouts.navbar.horizontal', ['dark' => true])
 
     Sticky dark navbar:
-    @include('tabler::layouts.navbar.default', ['dark' => true, 'sticky' => true])
+    @include('tabler::layouts.navbar.horizontal', ['dark' => true, 'sticky' => true])
 
     Overlap transparent navbar:
-    @include('tabler::layouts.navbar.default', ['transparent' => true, 'overlap' => true])
+    @include('tabler::layouts.navbar.horizontal', ['transparent' => true, 'overlap' => true])
 
     Custom background color:
-    @include('tabler::layouts.navbar.default', ['background' => 'primary'])
+    @include('tabler::layouts.navbar.horizontal', ['background' => 'primary'])
 --}}
 
 @php

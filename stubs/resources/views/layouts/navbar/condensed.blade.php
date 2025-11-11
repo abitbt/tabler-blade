@@ -32,13 +32,13 @@
 --}}
 
 @php
-    $dark = $dark ?? false;
-    $sticky = $sticky ?? false;
-    $transparent = $transparent ?? false;
-    $overlap = $overlap ?? false;
-    $breakpoint = $breakpoint ?? 'md';
-    $hideBrand = $hideBrand ?? false;
-    $hideSearch = $hideSearch ?? false;
+    $dark = $dark ?? config('tabler.navbar.dark', false);
+    $sticky = $sticky ?? config('tabler.navbar.sticky', false);
+    $transparent = $transparent ?? config('tabler.navbar.transparent', false);
+    $overlap = $overlap ?? config('tabler.navbar.overlap', false);
+    $breakpoint = $breakpoint ?? config('tabler.navbar.breakpoint', 'md');
+    $hideBrand = $hideBrand ?? config('tabler.navbar.hide_brand', false);
+    $hideSearch = $hideSearch ?? config('tabler.navbar.hide_search', false);
     $background = $background ?? null;
     $customClass = $customClass ?? '';
     $fluidSearch = $fluidSearch ?? false;
@@ -80,10 +80,6 @@
     }
 @endphp
 
-@if ($sticky)
-    <div class="sticky-top">
-@endif
-
 <!-- BEGIN CONDENSED NAVBAR (SINGLE ROW) -->
 <header class="{{ implode(' ', $navbarClasses) }}"@if ($dark) data-bs-theme="dark" @endif>
     <div class="container-xl">
@@ -100,50 +96,10 @@
         @endunless
 
         <!-- BEGIN NAVBAR UTILITIES (RIGHT SIDE) -->
-        <div class="navbar-nav order-md-last ms-auto flex-row">
-            @stack('navbar-utilities-start')
-
-            <!-- Theme Toggle -->
-            <div class="d-none d-md-flex me-3">
-                <div class="nav-item">
-                    <a href="#" class="nav-link hide-theme-dark px-0" title="Enable dark mode"
-                        data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-theme-toggle="dark">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round" class="icon">
-                            <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
-                        </svg>
-                    </a>
-                    <a href="#" class="nav-link hide-theme-light px-0" title="Enable light mode"
-                        data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-theme-toggle="light">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round" class="icon">
-                            <path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
-                            <path
-                                d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7" />
-                        </svg>
-                    </a>
-                </div>
-            </div>
-
-            @stack('navbar-utilities-before-user')
-
-            <!-- User Menu -->
-            @auth
-                @include('tabler::layouts.navbar.partials.user-menu', ['dark' => $dark])
-            @else
-                @if (Route::has('login'))
-                    <div class="nav-item">
-                        <a href="{{ route('login') }}" class="nav-link">
-                            <span class="nav-link-title">Sign in</span>
-                        </a>
-                    </div>
-                @endif
-            @endauth
-
-            @stack('navbar-utilities-end')
-        </div>
+        @include('tabler::layouts.navbar.partials.utilities', [
+            'dark' => $dark,
+            'placement' => 'condensed',
+        ])
         <!-- END NAVBAR UTILITIES (RIGHT SIDE) -->
 
         <!-- BEGIN COLLAPSIBLE NAVBAR CONTENT -->
@@ -168,7 +124,3 @@
     </div>
 </header>
 <!-- END CONDENSED NAVBAR (SINGLE ROW) -->
-
-@if ($sticky)
-    </div>
-@endif

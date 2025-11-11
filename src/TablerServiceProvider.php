@@ -11,6 +11,11 @@ class TablerServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../config/tabler.php', 'tabler');
+
+        // Register Menu builder
+        $this->app->bind('tabler.menu', function () {
+            return \Abitbt\TablerBlade\TablerMenu\TablerMenu::make();
+        });
     }
 
     public function boot(): void
@@ -19,6 +24,7 @@ class TablerServiceProvider extends ServiceProvider
         $this->bootViews();
         $this->bootComponentPath();
         $this->bootPagination();
+        $this->bootMenuMacros();
     }
 
     protected function bootPublishes(): void
@@ -79,6 +85,16 @@ class TablerServiceProvider extends ServiceProvider
             if (file_exists($componentPath)) {
                 Blade::anonymousComponentPath($componentPath, $prefix);
             }
+        }
+    }
+
+    protected function bootMenuMacros(): void
+    {
+        // Register any custom menu macros from config
+        $macros = config('tabler.menu.macros', []);
+
+        foreach ($macros as $name => $callback) {
+            \Abitbt\TablerBlade\TablerMenu\TablerMenu::macro($name, $callback);
         }
     }
 }

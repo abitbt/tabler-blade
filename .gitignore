@@ -1,0 +1,14 @@
+.DS_Store
+.phpunit.cache
+.phpunit.result.cache
+/.idea
+/.phpunit.cache
+/.vscode
+/phpunit.xml
+/vendor
+composer.lock
+composer.phar
+node_modules/**
+phpunit.xml
+test-results/**
+Thumbs.db

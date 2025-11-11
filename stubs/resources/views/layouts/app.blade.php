@@ -1,5 +1,5 @@
 {{--
-    Tabler UI Layout
+    Tabler UI Horizontal Layout
 
     Usage:
     @extends('tabler::layouts.app')
@@ -12,17 +12,19 @@
     - @section('navbar') - Override entire navbar
     - @section('page-header') - Custom page header
     - @section('footer') - Custom footer
+    - @section('breadcrumbs') - Breadcrumbs navigation
 
     Layout Variables:
 
-    HTML Level:
+    HTML Level (inherited from base):
     - $htmlDir = 'rtl'           // RTL text direction
+    - $htmlLang                  // Language code (default: app locale)
     - $bsThemeBase               // Theme base color
     - $bsThemeFont               // Theme font
     - $bsThemePrimary            // Primary color
     - $bsThemeRadius             // Border radius
 
-    Body Level:
+    Body Level (inherited from base):
     - $bodyClass                 // Custom body classes
     - $layoutBoxed = true        // Centered, max-width layout
     - $layoutFluid = true        // Full-width layout
@@ -39,73 +41,67 @@
 
     Footer:
     - $footerHidden = true       // Hide footer section
+
+    Container:
+    - $container                 // Container class (default: from config)
 --}}
 
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @if (isset($htmlDir) && $htmlDir === 'rtl') dir="rtl" @endif
-    data-bs-theme-base="{{ $bsThemeBase ?? 'gray' }}" data-bs-theme-font="{{ $bsThemeFont ?? 'sans-serif' }}"
-    data-bs-theme-primary="{{ $bsThemePrimary ?? 'blue' }}" data-bs-theme-radius="{{ $bsThemeRadius ?? '1' }}">
+@extends('tabler::layouts.base')
 
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
-        <title>{{ $title ?? config('app.name') }}</title>
-        @vite(['resources/scss/app.scss', 'resources/js/app.js'])
-        @stack('styles')
-    </head>
-    @php
-        $bodyClasses = collect([
-            $bodyClass ?? null,
-            $layoutBoxed ?? false ? 'layout-boxed' : null,
-            $layoutFluid ?? false ? 'layout-fluid' : null,
-        ])
-            ->filter()
-            ->implode(' ');
-    @endphp
+@section('body')
 
-    <body @if ($bodyClasses) class="{{ $bodyClasses }}" @endif>
+    <div class="page">
+        {{-- Navbar Section --}}
+        @if (!($navbarHidden ?? false))
+            @hasSection('navbar')
+                @yield('navbar')
+            @else
+                @include('tabler::layouts.navbar.condensed', [
+                    'dark' => $navbarDark ?? false,
+                    'sticky' => $navbarSticky ?? false,
+                    'overlap' => $navbarOverlap ?? false,
+                    'navItems' => $navItems ?? [],
+                ])
+            @endif
+        @endif
 
-        <div class="page">
-            {{-- Navbar Section --}}
-            @if (!($navbarHidden ?? false))
-                @if (View::hasSection('navbar'))
-                    @yield('navbar')
-                @else
-                    @include('tabler::layouts.navbar.condensed', [
-                        'dark' => $navbarDark ?? false,
-                        'sticky' => $navbarSticky ?? false,
-                        'overlap' => $navbarOverlap ?? false,
-                        'navItems' => $navItems ?? [],
-                    ])
+        <div class="page-wrapper">
+            {{-- Breadcrumbs (optional) --}}
+            @hasSection('breadcrumbs')
+                <div class="page-header-breadcrumb">
+                    <div class="{{ $container ?? config('tabler.layout.container', 'container-xl') }}">
+                        @yield('breadcrumbs')
+                    </div>
+                </div>
+            @endif
+
+            {{-- Page Header (optional) --}}
+            @if (!($pageHeaderHidden ?? false))
+                @hasSection('page-header')
+                    @yield('page-header')
                 @endif
             @endif
 
-            <div class="page-wrapper">
-                {{-- Page Header (optional) --}}
-                @if (!($pageHeaderHidden ?? false))
-                    @hasSection('page-header')
-                        @yield('page-header')
-                    @endif
-                @endif
+            {{-- Flash Messages --}}
+            @if (config('tabler.flash_messages.enabled', true))
+                <div class="{{ $container ?? config('tabler.layout.container', 'container-xl') }}">
+                    @include('tabler::layouts.partials.alerts')
+                </div>
+            @endif
 
-                {{-- Page Content --}}
-                <main id="content" class="page-body">
-                    <div class="container-xl">
-                        @yield('content')
-                    </div>
-                </main>
+            {{-- Page Content --}}
+            <main id="content" class="page-body">
+                <div class="{{ $container ?? config('tabler.layout.container', 'container-xl') }}">
+                    @yield('content')
+                </div>
+            </main>
 
-                {{-- Footer (optional) --}}
-                @if (!($footerHidden ?? false))
-                    @hasSection('footer')
-                        @yield('footer')
-                    @endif
+            {{-- Footer (optional) --}}
+            @if (!($footerHidden ?? false))
+                @hasSection('footer')
+                    @yield('footer')
                 @endif
-            </div>
+            @endif
         </div>
-
-        @stack('scripts')
-    </body>
-
-</html>
+    </div>
+@endsection
