@@ -1,6 +1,6 @@
 <?php
 
-namespace Tabler;
+namespace Abitbt\TablerBlade;
 
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;

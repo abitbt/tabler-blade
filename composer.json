@@ -1,12 +1,12 @@
 {
-    "name": "abitbt/tablerui",
+    "name": "abitbt/tabler-blade",
     "description": "UI component library for tabler.",
     "keywords": ["tabler", "laravel", "blade", "components", "ui"],
     "license": "MIT",
     "authors": [
         {
-            "name": "Abi",
-            "email": "calebporzio@gmail.com"
+            "name": "aBit",
+            "email": "opensource@abit.bt"
         }
     ],
     "require": {
@@ -18,17 +18,14 @@
     },
     "autoload": {
         "psr-4": {
-            "Tabler\\": "src/"
+            "Abitbt\\TablerBlade\\": "src/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Tabler\\TablerServiceProvider"
-            ],
-            "aliases": {
-                "Tabler": "Tabler\\Tabler"
-            }
+                "Abitbt\\TablerBlade\\TablerServiceProvider"
+            ]
         }
     }
 }
