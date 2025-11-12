@@ -37,17 +37,17 @@ class TablerServiceProvider extends ServiceProvider
 
             // Publish views
             $this->publishes([
-                __DIR__.'/../stubs/resources/views' => resource_path('views/vendor/tabler'),
+                __DIR__.'/../stubs/resources/views' => resource_path('views/tabler'),
             ], 'tabler-views');
 
             // Publish layouts
             $this->publishes([
-                __DIR__.'/../stubs/resources/views/layouts' => resource_path('views/vendor/tabler/layouts'),
+                __DIR__.'/../stubs/resources/views/layouts' => resource_path('views/tabler/layouts'),
             ], 'tabler-layouts');
 
             // Publish pagination views
             $this->publishes([
-                __DIR__.'/../stubs/resources/views/pagination' => resource_path('views/vendor/tabler/pagination'),
+                __DIR__.'/../stubs/resources/views/pagination' => resource_path('views/tabler/pagination'),
             ], 'tabler-pagination');
         }
     }

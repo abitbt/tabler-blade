@@ -14,7 +14,7 @@
     $showThemeToggle = $showThemeToggle ?? true;
 @endphp
 
-<div class="navbar-nav {{ $placement === 'condensed' ? 'order-md-last ms-auto' : 'order-md-last' }} flex-row">
+<div class="navbar-nav {{ $placement === 'condensed' ? 'order-md-last ms-md-auto' : 'order-md-last' }} flex-row">
     @stack('navbar-utilities-start')
 
     {{-- Notifications (customizable via stack) --}}
