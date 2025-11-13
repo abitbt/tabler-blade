@@ -60,12 +60,12 @@
     <div class="page">
         {{-- BEGIN SIDEBAR --}}
         @include('tabler::layouts.partials.sidebar', [
-            'dark' => $sidebarDark ?? config('tabler.sidebar.dark', true),
-            'position' => $sidebarPosition ?? config('tabler.sidebar.position', 'left'),
-            'transparent' => $sidebarTransparent ?? config('tabler.sidebar.transparent', false),
-            'background' => $sidebarBackground ?? config('tabler.sidebar.background'),
-            'breakpoint' => $sidebarBreakpoint ?? config('tabler.sidebar.breakpoint', 'lg'),
-            'hideBrand' => $hideSidebarBrand ?? config('tabler.sidebar.hide_brand', false),
+            'dark' => $sidebarDark ?? config('.ai-docs.tabler.sidebar.dark', true),
+            'position' => $sidebarPosition ?? config('.ai-docs.tabler.sidebar.position', 'left'),
+            'transparent' => $sidebarTransparent ?? config('.ai-docs.tabler.sidebar.transparent', false),
+            'background' => $sidebarBackground ?? config('.ai-docs.tabler.sidebar.background'),
+            'breakpoint' => $sidebarBreakpoint ?? config('.ai-docs.tabler.sidebar.breakpoint', 'lg'),
+            'hideBrand' => $hideSidebarBrand ?? config('.ai-docs.tabler.sidebar.hide_brand', false),
             'customClass' => $sidebarCustomClass ?? '',
             'navItems' => $navItems ?? [],
             'sidebarItems' => $sidebarItems ?? null,
