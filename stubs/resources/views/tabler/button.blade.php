@@ -1,90 +1,174 @@
 {{--
-    Button Component
+    Tabler Button Component
 
-    A versatile button with smart defaults and complex rendering logic.
+    Versatile button component with support for different colors, variants, sizes, icons, and states.
+    Use buttons to engage users and encourage them to take desired actions throughout your interface.
 
-    @prop string $type - Button type: 'button', 'submit', 'reset' (default: 'button')
-    @prop string|null $href - URL to link to (renders as <a> instead of <button>)
-    @prop string|null $color - Color variant: 'primary', 'secondary', 'success', 'danger', 'warning', 'info', etc.
-    @prop string|null $variant - Style variant: 'outline', 'ghost'
-    @prop string|null $size - Size: 'sm', 'lg'
-    @prop string|null $shape - Shape: 'square', 'pill'
-    @prop string|null $icon - Leading Tabler icon name (without 'tabler-' prefix)
-    @prop string|null $iconEnd - Trailing Tabler icon name (without 'tabler-' prefix)
-    @prop bool $iconOnly - Icon-only button (no text)
-    @prop bool $loading - Show loading state
-    @prop bool $disabled - Disable button
-    @prop string|null $animate - Icon animation: 'rotate', 'shake', 'pulse', 'tada', 'move-start'
-    @prop bool $fullWidth - Make button full width
-
-    @slot default - Button text/content
+    @prop string $type - Button type attribute (default: 'button' for <button>, null for <a>)
+    @prop string|null $href - URL for button as link (changes element to <a>)
+    @prop string $color - Button color variant (default: null for default white button)
+    @prop string|null $variant - Button style variant: null (solid), 'outline', 'ghost' (default: null)
+    @prop string|null $size - Button size: 'sm', 'lg', 'xl' (default: null for medium)
+    @prop string|null $shape - Button shape: 'square', 'pill' (default: null for default rounded)
+    @prop string|null $icon - Icon name from blade-tabler-icons for start icon
+    @prop string|null $iconEnd - Icon name from blade-tabler-icons for end icon
+    @prop bool $iconOnly - Display only icon without text (default: false)
+    @prop bool $loading - Show loading spinner state (default: false)
+    @prop bool $disabled - Disable the button (default: false)
+    @prop bool $fullWidth - Make button full width with w-100 class (default: false)
 
     Available CSS Classes (use via class="" attribute):
 
-    Button Styles:
-    - btn-link           - Text button style (no background)
-    - btn-action         - Minimal action button (for icons)
-    - btn-floating       - Floating action button
+    Button Colors:
+    - btn-primary          - Primary action button (blue)
+    - btn-secondary        - Secondary button (gray)
+    - btn-success          - Success/confirm button (green)
+    - btn-warning          - Warning button (yellow)
+    - btn-danger           - Danger/delete button (red)
+    - btn-info             - Informational button (cyan)
+    - btn-dark             - Dark button (dark gray)
+    - btn-light            - Light button (light gray)
+    - btn-{color}          - Any Tabler theme color (blue, azure, indigo, purple, pink, red, orange, yellow, lime, green, teal, cyan)
 
-    Button Lists:
-    - btn-list           - Wrap buttons in a list container
+    Button Variants:
+    - btn-outline          - Outline variant (transparent with border, use with color)
+    - btn-outline-{color}  - Outline button with specific color
+    - btn-ghost            - Ghost variant (transparent, no border)
+    - btn-ghost-{color}    - Ghost button with specific color
+    - btn-link             - Link-styled button
 
-    Icon Sizes (for icon-only buttons):
-    - btn-icon-sm        - Small icon button
-    - btn-icon-lg        - Large icon button
+    Button Sizes:
+    - btn-sm               - Small button
+    - btn-lg               - Large button
+    - btn-xl               - Extra large button
 
-    IMPORTANT: btn-action vs btn-icon
-    - Use iconOnly prop for regular icon-only buttons (adds btn-icon class)
-    - Use class="btn-action" for minimal action buttons (no iconOnly prop needed)
-    - Don't combine iconOnly prop with btn-action class (they conflict)
+    Button Shapes:
+    - btn-square           - Square corners (no border radius)
+    - btn-pill             - Fully rounded pill shape
 
-    Additional Sizes:
-    - w-100              - Full width (also available via fullWidth prop)
-    - w-auto             - Auto width
+    Button States:
+    - btn-loading          - Loading state with spinner (automatically added by loading prop)
+    - disabled             - Disabled state (automatically added by disabled prop)
+    - btn-icon             - Icon-only button (automatically added by iconOnly prop)
 
-    Shadow:
-    - shadow-sm          - Small shadow
-    - shadow             - Default shadow
-    - shadow-lg          - Large shadow
+    Button Layout:
+    - w-100                - Full width button
+    - btn-list             - Container for multiple buttons with proper spacing
 
-    Spacing (in button groups):
-    - me-2, ms-2         - Margin end/start
-    - mb-2, mt-2         - Margin bottom/top
+    Button Animations:
+    - btn-animate-icon              - Basic icon animation on hover
+    - btn-animate-icon-rotate       - Rotate icon on hover
+    - btn-animate-icon-shake        - Shake icon on hover
+    - btn-animate-icon-pulse        - Pulse icon on hover
+    - btn-animate-icon-tada         - Tada animation on hover
+    - btn-animate-icon-move-start   - Move icon to start on hover
+    - btn-animate-icon-move-end     - Move icon to end on hover
 
     Usage Examples:
 
-    Basic button:
-    <x-tabler::button color="primary">Click Me</x-tabler::button>
+    Basic Button:
+    <x-tabler::button>
+        Click Me
+    </x-tabler::button>
 
-    Button with icon:
-    <x-tabler::button icon="plus" color="success">Add New</x-tabler::button>
+    Primary Button:
+    <x-tabler::button color="primary">
+        Save Changes
+    </x-tabler::button>
 
-    Icon-only button:
-    <x-tabler::button icon="search" iconOnly aria-label="Search" />
+    Button as Link:
+    <x-tabler::button href="/dashboard">
+        Dashboard
+    </x-tabler::button>
 
-    Link button (renders as <a>):
-    <x-tabler::button href="/dashboard" color="primary">Dashboard</x-tabler::button>
+    Outline Button:
+    <x-tabler::button color="danger" variant="outline">
+        Cancel
+    </x-tabler::button>
 
-    Outline variant:
-    <x-tabler::button color="danger" variant="outline">Delete</x-tabler::button>
+    Ghost Button:
+    <x-tabler::button color="success" variant="ghost">
+        Subtle Action
+    </x-tabler::button>
 
-    Loading state:
-    <x-tabler::button loading color="primary">Processing...</x-tabler::button>
+    Button with Icon:
+    <x-tabler::button color="primary" icon="plus">
+        Add Item
+    </x-tabler::button>
 
-    Text button (via class):
-    <x-tabler::button class="btn-link">Text button</x-tabler::button>
+    Button with End Icon:
+    <x-tabler::button iconEnd="arrow-right">
+        Next
+    </x-tabler::button>
 
-    Action button (minimal style):
-    <x-tabler::button class="btn-action" icon="dots-vertical" iconOnly />
+    Icon-Only Button:
+    <x-tabler::button color="danger" icon="trash" iconOnly>
+        Delete
+    </x-tabler::button>
 
-    Button with shadow:
-    <x-tabler::button color="primary" class="shadow-lg">Elevated</x-tabler::button>
+    Loading Button:
+    <x-tabler::button color="primary" loading>
+        Processing...
+    </x-tabler::button>
 
-    Button group example:
-    <div class="btn-list">
-        <x-tabler::button color="primary">Save</x-tabler::button>
-        <x-tabler::button variant="outline">Cancel</x-tabler::button>
-    </div>
+    Disabled Button:
+    <x-tabler::button color="secondary" disabled>
+        Not Available
+    </x-tabler::button>
+
+    Different Sizes:
+    <x-tabler::button size="sm">Small</x-tabler::button>
+    <x-tabler::button>Medium</x-tabler::button>
+    <x-tabler::button size="lg">Large</x-tabler::button>
+    <x-tabler::button size="xl">Extra Large</x-tabler::button>
+
+    Pill Button:
+    <x-tabler::button color="primary" shape="pill">
+        Pill Shape
+    </x-tabler::button>
+
+    Square Button:
+    <x-tabler::button shape="square">
+        Square Corners
+    </x-tabler::button>
+
+    Full Width Button:
+    <x-tabler::button color="primary" fullWidth>
+        Full Width
+    </x-tabler::button>
+
+    Button with Custom Classes:
+    <x-tabler::button color="primary" class="btn-animate-icon">
+        Hover Me
+        <x-tabler-arrow-right class="icon-end" />
+    </x-tabler::button>
+
+    Social Media Button:
+    <x-tabler::button color="facebook" icon="brand-facebook">
+        Facebook
+    </x-tabler::button>
+
+    JavaScript Requirements:
+    - No JavaScript required for basic buttons
+    - Loading state uses CSS spinner animation
+    - For dropdown buttons, use Bootstrap's data-bs-toggle="dropdown"
+    - For modal triggers, use data-bs-toggle="modal" data-bs-target="#modalId"
+
+    Accessibility:
+    - Semantic <button> or <a> element based on href prop
+    - type="button" added to <button> elements to prevent form submission
+    - aria-label automatically added for icon-only buttons
+    - disabled attribute properly applied
+    - Proper focus states for keyboard navigation
+
+    Livewire Compatibility:
+    <x-tabler::button wire:click="save" color="primary">
+        Save
+    </x-tabler::button>
+
+    <x-tabler::button wire:click="delete" wire:confirm="Are you sure?" color="danger">
+        Delete
+    </x-tabler::button>
 --}}
 
 @props([
@@ -99,25 +183,25 @@
     'iconOnly' => false,
     'loading' => false,
     'disabled' => false,
-    'animate' => null,
     'fullWidth' => false,
 ])
 
 @php
-    // Determine HTML element (<a> for links, <button> otherwise)
-    $element = $href ? 'a' : 'button';
+    // Determine if button should be rendered as link
+    $isLink = $href !== null;
+    $element = $isLink ? 'a' : 'button';
 
-    // Build button classes array
+    // Build base button classes
     $classes = ['btn'];
 
-    // Color variants with outline/ghost modifiers
+    // Add color classes based on variant
     if ($color) {
         if ($variant === 'outline') {
-            $classes[] = 'btn-outline-' . $color;
+            $classes[] = "btn-outline-{$color}";
         } elseif ($variant === 'ghost') {
-            $classes[] = 'btn-ghost-' . $color;
+            $classes[] = "btn-ghost-{$color}";
         } else {
-            $classes[] = 'btn-' . $color;
+            $classes[] = "btn-{$color}";
         }
     } elseif ($variant === 'outline') {
         $classes[] = 'btn-outline';
@@ -125,103 +209,56 @@
         $classes[] = 'btn-ghost';
     }
 
-    // Size modifiers
-    if ($size && $size !== 'md') {
-        if ($iconOnly && !str_contains($attributes->get('class', ''), 'btn-action')) {
-            // For icon-only buttons, use btn-icon-{size} instead of btn-{size}
-            $classes[] = 'btn-icon-' . $size;
-        } else {
-            // For regular buttons
-            $classes[] = 'btn-' . $size;
-        }
+    // Add size class
+    if ($size) {
+        $classes[] = "btn-{$size}";
     }
 
-    // Shape modifiers
+    // Add shape class
     if ($shape) {
-        $classes[] = 'btn-' . $shape;
+        $classes[] = "btn-{$shape}";
     }
 
-    // Icon-only button style
-    // Don't add btn-icon if btn-action is already present (they conflict)
-if ($iconOnly && !str_contains($attributes->get('class', ''), 'btn-action')) {
-    $classes[] = 'btn-icon';
-}
-
-// Loading state
-if ($loading) {
-    $classes[] = 'btn-loading';
-}
-
-// Disabled state (for links, add 'disabled' class)
-if ($disabled && $href) {
-    $classes[] = 'disabled';
-}
-
-// Icon animations
-if ($animate) {
-    $classes[] = 'btn-animate-icon';
-    if ($animate !== true) {
-        $classes[] = 'btn-animate-icon-' . $animate;
+    // Add state classes
+    if ($loading) {
+        $classes[] = 'btn-loading';
     }
-}
 
-// Layout modifiers
-if ($fullWidth) {
-    $classes[] = 'w-100';
-}
-
-// Build element-specific attributes
-$elementAttributes = [];
-
-if ($element === 'a') {
-    $elementAttributes['href'] = $href;
-    $elementAttributes['role'] = 'button';
-    if ($disabled) {
-        $elementAttributes['aria-disabled'] = 'true';
-        $elementAttributes['tabindex'] = '-1';
+    if ($iconOnly) {
+        $classes[] = 'btn-icon';
     }
-} else {
-    $elementAttributes['type'] = $type;
-    if ($disabled) {
-        $elementAttributes['disabled'] = 'disabled';
+
+    if ($fullWidth) {
+        $classes[] = 'w-100';
     }
-}
 
-// Accessibility: Auto-generate aria-label for icon-only buttons
-if ($iconOnly && !$attributes->has('aria-label')) {
-    $iconName = $icon ?? ($iconEnd ?? 'button');
-    $elementAttributes['aria-label'] = ucfirst(str_replace('-', ' ', $iconName));
-}
-
-// Prepare icon component names (add 'tabler-' prefix)
-$leadingIcon = $icon ? 'tabler-' . $icon : null;
-$trailingIcon = $iconEnd ? 'tabler-' . $iconEnd : null;
+    // For icon-only buttons, use slot content or default text for aria-label
+    $ariaLabel =
+        $iconOnly && !$attributes->has('aria-label') ? ($slot->isEmpty() ? 'Button' : strip_tags($slot)) : null;
 @endphp
 
-<{{ $element }} {{ $attributes->merge(['class' => implode(' ', $classes)]) }}
-    @foreach ($elementAttributes as $attr => $value)
-        @if (is_bool($value))
-            {{ $attr }}
-        @else
-            {{ $attr }}="{{ $value }}"
-        @endif @endforeach>
-    {{-- Leading icon or icon-only --}}
-    @if ($iconOnly)
-        @if ($leadingIcon || $trailingIcon)
-            <x-dynamic-component :component="$leadingIcon ?: $trailingIcon" class="icon" />
-        @endif
+<{{ $element }}
+    @if ($isLink) href="{{ $href }}"
     @else
-        {{-- Leading icon for regular buttons --}}
-        @if ($leadingIcon)
-            <x-dynamic-component :component="$leadingIcon" class="icon" />
-        @endif
+        type="{{ $type }}" @endif
+    {{ $attributes->class($classes)->merge([
+        'disabled' => $disabled || $loading,
+    ]) }}
+    @if ($ariaLabel) aria-label="{{ $ariaLabel }}" @endif>
+    @if ($loading)
+        <span class="spinner-border spinner-border-sm{{ !$iconOnly ? ' me-2' : '' }}" role="status"
+            aria-hidden="true"></span>
+    @endif
 
-        {{-- Button text/content --}}
+    @if ($icon && !$loading)
+        <x-dynamic-component :component="'tabler-' . $icon" />
+    @endif
+
+    @unless ($iconOnly)
         {{ $slot }}
+    @endunless
 
-        {{-- Trailing icon --}}
-        @if ($trailingIcon)
-            <x-dynamic-component :component="$trailingIcon" class="icon-end" />
-        @endif
+    @if ($iconEnd && !$loading)
+        <x-dynamic-component :component="'tabler-' . $iconEnd" class="icon-end" />
     @endif
     </{{ $element }}>

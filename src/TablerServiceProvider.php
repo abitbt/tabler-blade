@@ -77,7 +77,7 @@ class TablerServiceProvider extends ServiceProvider
         $prefix = config('tabler.prefix', 'tabler');
 
         // Register package components
-        Blade::anonymousComponentPath(__DIR__ . '/../stubs/resources/views/tabler', $prefix);
+        Blade::anonymousComponentPath(__DIR__.'/../stubs/resources/views/tabler', $prefix);
 
         // Register user's custom tabler components (override package components)
         if (config('tabler.enable_overrides', true)) {

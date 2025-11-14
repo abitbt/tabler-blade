@@ -1,164 +1,141 @@
 {{--
-    Alert Component
+    Tabler Alert Component
 
-    Alert messages inform users of the status of their action and help them solve problems.
-    Supports various types (success, info, warning, danger) and customization options.
+    Alert messages are used to inform users of the status of their action and help them solve any problems that might have occurred.
 
-    @prop string $type - Alert type: 'success', 'info', 'warning', 'danger' (default: 'info')
-    @prop string|null $title - Alert title/heading
-    @prop string|null $icon - Tabler icon name (without 'tabler-' prefix) to display on the left
-    @prop bool $dismissible - Show close button for dismissing the alert
-    @prop bool $important - Use colored background instead of subtle styling
-
-    @slot default - Main alert content
-    @slot:title - Optional slot for custom title markup
-    @slot:actions - Optional slot for action buttons
+    @prop string $color - Alert color variant (default: 'info')
+    @prop string|null $icon - Icon name from blade-tabler-icons (auto-detected based on color if not provided)
+    @prop bool $dismissible - Whether the alert can be dismissed (default: false)
+    @prop bool $important - Use important variant with solid background color (default: false)
 
     Available CSS Classes (use via class="" attribute):
 
-    Alert Types (colors):
-    - alert-success      - Success message (green)
-    - alert-info         - Informational message (blue)
-    - alert-warning      - Warning message (yellow/orange)
-    - alert-danger       - Error/danger message (red)
-    - alert-{color}      - Any Tabler color (primary, secondary, lime, cyan, facebook, etc.)
-
     Alert Variants:
-    - alert-important    - Filled background style (more prominent)
-    - alert-dismissible  - Can be closed (also available via dismissible prop)
+    - alert-success        - Success message with green color
+    - alert-info           - Informational message with blue color
+    - alert-warning        - Warning message with yellow color
+    - alert-danger         - Error/danger message with red color
+    - alert-{color}        - Any Tabler theme color (primary, secondary, etc.)
 
-    Content Styling:
-    - alert-heading      - Title/heading text style
-    - alert-description  - Description/content wrapper
-    - alert-icon         - Icon wrapper and icon styling
-    - alert-link         - Link styling within alerts
+    Alert Modifiers:
+    - alert-important      - Solid background with white text
+    - alert-minor          - Transparent background with border only
+    - alert-dismissible    - Makes alert dismissible (automatically added if dismissible prop is true)
 
-    Close Button:
-    - btn-close          - Standard close button
-    - btn-close-white    - White close button (for important/filled alerts)
+    Alert Layout:
+    - alert-icon           - Icon styling class (used on icon element)
+    - alert-heading        - Heading/title element class
+    - alert-description    - Description text class
+    - alert-link           - Link element styling
+    - alert-action         - Action link styling (underlined)
+    - alert-list           - List styling within alert
 
     Usage Examples:
 
-    Basic alert:
-    <x-tabler::alert type="success" title="Success!">
-        Your changes have been saved.
+    Basic Alert:
+    <x-tabler::alert color="success">
+        Your account has been saved!
     </x-tabler::alert>
 
-    Alert with icon:
-    <x-tabler::alert type="warning" icon="alert-triangle" title="Warning">
-        Please review your information.
+    Alert with Icon:
+    <x-tabler::alert color="danger" icon="alert-circle">
+        An error occurred during processing.
     </x-tabler::alert>
 
-    Dismissible alert:
-    <x-tabler::alert type="danger" dismissible title="Error occurred">
-        Could not process your request.
+    Dismissible Alert:
+    <x-tabler::alert color="warning" dismissible>
+        Please review your information before continuing.
     </x-tabler::alert>
 
-    Important alert (filled background):
-    <x-tabler::alert type="info" important dismissible>
-        <strong>Note:</strong> This is an important message.
+    Important Alert:
+    <x-tabler::alert color="success" important dismissible>
+        Operation completed successfully!
     </x-tabler::alert>
 
-    Alert with custom title slot:
-    <x-tabler::alert type="success" icon="check">
-        <x-slot:title>
-            <strong>Completed!</strong>
-        </x-slot:title>
-        All tasks have been finished successfully.
+    Alert with Named Slots:
+    <x-tabler::alert color="info">
+        <x-slot:title>Did you know?</x-slot>
+        <x-slot:description>Here is something that you might like to know.</x-slot>
     </x-tabler::alert>
 
-    Alert with action buttons:
-    <x-tabler::alert type="warning" dismissible>
-        <x-slot:title>Confirm Action</x-slot:title>
-        Are you sure you want to proceed?
-        <x-slot:actions>
-            <x-tabler::button color="warning" size="sm">Confirm</x-tabler::button>
-            <x-tabler::button size="sm">Cancel</x-tabler::button>
-        </x-slot:actions>
+    Alert with Custom Content:
+    <x-tabler::alert color="danger" class="mb-3">
+        <h4 class="alert-heading">Error Processing Request</h4>
+        <div class="alert-description">
+            The following errors occurred:
+            <ul class="alert-list">
+                <li>Invalid email address</li>
+                <li>Password is too short</li>
+            </ul>
+        </div>
     </x-tabler::alert>
 
-    Alert with link:
-    <x-tabler::alert type="info" title="New update available">
-        Version 2.0 is now available. <a href="#" class="alert-link">Learn more</a>
-    </x-tabler::alert>
+    JavaScript Requirements:
+    - Dismissible alerts require Bootstrap 5 JS for data-bs-dismiss="alert" functionality
+    - Include Bootstrap JS in your layout or via CDN
 
-    Custom color alert:
-    <x-tabler::alert class="alert-lime" title="Success!">
-        Custom lime color alert.
+    Accessibility:
+    - role="alert" is automatically added for screen readers
+    - aria-label="close" is added to close button
+    - Alert close button is keyboard accessible
+
+    Livewire Compatibility:
+    <x-tabler::alert wire:poll.5s="checkStatus" color="info">
+        Checking for updates...
     </x-tabler::alert>
 --}}
 
 @props([
-    'type' => 'info',
-    'title' => null,
+    'color' => 'info',
     'icon' => null,
     'dismissible' => false,
     'important' => false,
+    'title' => null,
+    'description' => null,
 ])
 
 @php
-    // Build alert classes
-    $classes = ['alert'];
-
-    // Add type class
-    $classes[] = 'alert-' . $type;
-
-    // Important variant (filled background)
-    if ($important) {
-        $classes[] = 'alert-important';
+    // Auto-detect icon based on color if not provided (and not explicitly disabled)
+    if ($icon === null) {
+        $icon = match ($color) {
+            'success' => 'check',
+            'warning' => 'alert-triangle',
+            'danger', 'error' => 'alert-circle',
+            'info' => 'info-circle',
+            default => false,
+        };
     }
 
-    // Dismissible variant
-    if ($dismissible) {
-        $classes[] = 'alert-dismissible';
-    }
-
-    // Prepare icon component name
-    $iconComponent = $icon ? 'tabler-' . $icon : null;
-
-    // Determine close button style (white for important alerts)
-    $closeButtonClass = $important ? 'btn-close btn-close-white' : 'btn-close';
+    // Normalize 'error' to 'danger' for Bootstrap compatibility
+    $alertColor = $color === 'error' ? 'danger' : $color;
 @endphp
 
-<div {{ $attributes->merge(['class' => implode(' ', $classes)]) }} role="alert">
-    @if ($iconComponent)
-        {{-- Alert with icon layout (uses alert-icon wrapper) --}}
+<div
+    {{ $attributes->class(['alert', "alert-{$alertColor}", 'alert-important' => $important, 'alert-dismissible' => $dismissible])->merge([
+            'role' => 'alert',
+        ]) }}>
+    @if ($icon)
         <div class="alert-icon">
-            <x-dynamic-component :component="$iconComponent" class="icon alert-icon" />
+            <x-dynamic-component :component="'tabler-' . $icon" />
         </div>
-        <div>
-            @if ($title)
-                <h4 class="alert-heading">{{ $title }}</h4>
-                @if ($slot->isNotEmpty())
-                    <div class="alert-description">{{ $slot }}</div>
-                @endif
-            @else
-                {{-- No title, content goes directly --}}
-                {{ $slot }}
-            @endif
-            @isset($actions)
-                <div class="btn-list mt-2">{{ $actions }}</div>
-            @endisset
-        </div>
-    @elseif($title)
-        {{-- Alert with title but no icon --}}
-        <h4 class="alert-heading">{{ $title }}</h4>
-        @if ($slot->isNotEmpty())
-            <div class="alert-description">{{ $slot }}</div>
-        @endif
-        @isset($actions)
-            <div class="btn-list mt-2">{{ $actions }}</div>
-        @endisset
-    @else
-        {{-- Simple alert without icon or title --}}
-        {{ $slot }}
-        @isset($actions)
-            <div class="btn-list mt-2">{{ $actions }}</div>
-        @endisset
     @endif
 
-    {{-- Dismissible close button --}}
+    <div>
+        @if ($title)
+            <h4 class="alert-heading">{{ $title }}</h4>
+        @endif
+
+        @if ($description)
+            <div class="alert-description">
+                {{ $description }}
+            </div>
+        @elseif ($slot->isNotEmpty())
+            {{ $slot }}
+        @endif
+    </div>
+
     @if ($dismissible)
-        <a class="{{ $closeButtonClass }}" data-bs-dismiss="alert" aria-label="close"></a>
+        <button type="button" class="btn-close{{ $important ? ' btn-close-white' : '' }}" data-bs-dismiss="alert"
+            aria-label="close"></button>
     @endif
 </div>
