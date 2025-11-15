@@ -5,6 +5,7 @@ namespace Abitbt\TablerBlade;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\View\ComponentAttributeBag;
 
 class TablerServiceProvider extends ServiceProvider
 {
@@ -12,10 +13,13 @@ class TablerServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__.'/../config/tabler.php', 'tabler');
 
-        // Register Menu builder
-        $this->app->bind('tabler.menu', function () {
-            return \Abitbt\TablerBlade\TablerMenu\TablerMenu::make();
-        });
+        // Register TablerManager singleton
+        $this->app->alias(TablerManager::class, 'tabler');
+        $this->app->singleton(TablerManager::class);
+
+        // Register Tabler facade alias
+        $loader = \Illuminate\Foundation\AliasLoader::getInstance();
+        $loader->alias('Tabler', \Abitbt\TablerBlade\Tabler::class);
     }
 
     public function boot(): void
@@ -23,8 +27,15 @@ class TablerServiceProvider extends ServiceProvider
         $this->bootPublishes();
         $this->bootViews();
         $this->bootComponentPath();
+        $this->bootDirectives();
+        $this->bootTagCompiler();
+        $this->bootMacros();
         $this->bootPagination();
-        $this->bootMenuMacros();
+        $this->bootCommands();
+
+        AssetManager::boot();
+
+        app('tabler')->boot();
     }
 
     protected function bootPublishes(): void
@@ -68,33 +79,76 @@ class TablerServiceProvider extends ServiceProvider
 
     protected function bootViews(): void
     {
-        $prefix = config('tabler.prefix', 'tabler');
-        $this->loadViewsFrom(__DIR__.'/../stubs/resources/views', $prefix);
+        $this->loadViewsFrom(__DIR__.'/../stubs/resources/views', 'tabler');
     }
 
     protected function bootComponentPath(): void
     {
-        $prefix = config('tabler.prefix', 'tabler');
-
-        // Register package components
-        Blade::anonymousComponentPath(__DIR__.'/../stubs/resources/views/tabler', $prefix);
-
-        // Register user's custom tabler components (override package components)
-        if (config('tabler.enable_overrides', true)) {
-            $componentPath = config('tabler.component_path', resource_path('views/tabler'));
-            if (file_exists($componentPath)) {
-                Blade::anonymousComponentPath($componentPath, $prefix);
-            }
+        // Register package components with <tabler:*> syntax
+        if (file_exists(resource_path('views/tabler'))) {
+            Blade::anonymousComponentPath(resource_path('views/tabler'), 'tabler');
         }
+
+        Blade::anonymousComponentPath(__DIR__.'/../stubs/resources/views/tabler', 'tabler');
     }
 
-    protected function bootMenuMacros(): void
+    protected function bootDirectives(): void
     {
-        // Register any custom menu macros from config
-        $macros = config('tabler.menu.macros', []);
+        // Register @blaze directive as fallback if Blaze package is not installed
+        // This allows components to use @blaze without requiring livewire/blaze
+        Blade::directive('blaze', fn () => '');
 
-        foreach ($macros as $name => $callback) {
-            \Abitbt\TablerBlade\TablerMenu\TablerMenu::macro($name, $callback);
+        // Register @unblaze and @endunblaze directives for dynamic sections
+        Blade::directive('unblaze', function ($expression) {
+            return ''
+                . '<'.'?php $__getScope = fn($scope = []) => $scope; ?>'
+                . '<'.'?php if (isset($scope)) $__scope = $scope; ?>'
+                . '<'.'?php $scope = $__getScope('.$expression.'); ?>';
+        });
+
+        Blade::directive('endunblaze', function () {
+            return '<'.'?php if (isset($__scope)) { $scope = $__scope; unset($__scope); } ?>';
+        });
+    }
+
+    protected function bootTagCompiler(): void
+    {
+        $compiler = new TablerTagCompiler(
+            app('blade.compiler')->getClassComponentAliases(),
+            app('blade.compiler')->getClassComponentNamespaces(),
+            app('blade.compiler')
+        );
+
+        app()->bind('tabler.compiler', fn () => $compiler);
+
+        app('blade.compiler')->precompiler(function ($in) use ($compiler) {
+            return $compiler->compile($in);
+        });
+    }
+
+    protected function bootMacros(): void
+    {
+        // Add getCurrentComponentData macro to View
+        app('view')::macro('getCurrentComponentData', function () {
+            return $this->currentComponentData;
+        });
+
+        // Add pluck macro to ComponentAttributeBag
+        ComponentAttributeBag::macro('pluck', function ($key, $default = null) {
+            $result = $this->get($key);
+
+            unset($this->attributes[$key]);
+
+            return $result ?? $default;
+        });
+    }
+
+    protected function bootCommands(): void
+    {
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                Commands\IconCommand::class,
+            ]);
         }
     }
 }

@@ -16,38 +16,22 @@
     <nav aria-label="Page navigation">
         <ul class="pagination">
             {{-- Previous Page Link --}}
-            @if ($paginator->onFirstPage())
-                <li class="page-item disabled" aria-disabled="true">
-                    <span class="page-link">
-                        <x-tabler-chevron-left class="icon" />
-                        prev
-                    </span>
-                </li>
-            @else
-                <li class="page-item">
-                    <a class="page-link" href="{{ $paginator->previousPageUrl() }}" rel="prev">
-                        <x-tabler-chevron-left class="icon" />
-                        prev
-                    </a>
-                </li>
-            @endif
+            @include('tabler::pagination.partials.nav-button', [
+                'isDisabled' => $paginator->onFirstPage(),
+                'url' => $paginator->previousPageUrl(),
+                'direction' => 'prev',
+                'label' => config('tabler.pagination.previous_label', 'prev'),
+                'ariaLabel' => __('pagination.previous'),
+            ])
 
             {{-- Next Page Link --}}
-            @if ($paginator->hasMorePages())
-                <li class="page-item">
-                    <a class="page-link" href="{{ $paginator->nextPageUrl() }}" rel="next">
-                        next
-                        <x-tabler-chevron-right class="icon" />
-                    </a>
-                </li>
-            @else
-                <li class="page-item disabled" aria-disabled="true">
-                    <span class="page-link">
-                        next
-                        <x-tabler-chevron-right class="icon" />
-                    </span>
-                </li>
-            @endif
+            @include('tabler::pagination.partials.nav-button', [
+                'isDisabled' => !$paginator->hasMorePages(),
+                'url' => $paginator->nextPageUrl(),
+                'direction' => 'next',
+                'label' => config('tabler.pagination.next_label', 'next'),
+                'ariaLabel' => __('pagination.next'),
+            ])
         </ul>
     </nav>
 @endif
