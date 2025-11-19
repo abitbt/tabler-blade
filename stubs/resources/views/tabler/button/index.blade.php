@@ -4,6 +4,7 @@
     // Extract namespaced attributes BEFORE @props
     $iconTrailing ??= $attributes->pluck('icon:trailing');
     $iconLeading ??= $attributes->pluck('icon:leading');
+    $iconVariant ??= $attributes->pluck('icon:variant');
 @endphp
 
 @props([

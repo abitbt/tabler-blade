@@ -101,9 +101,9 @@ class TablerServiceProvider extends ServiceProvider
         // Register @unblaze and @endunblaze directives for dynamic sections
         Blade::directive('unblaze', function ($expression) {
             return ''
-                . '<'.'?php $__getScope = fn($scope = []) => $scope; ?>'
-                . '<'.'?php if (isset($scope)) $__scope = $scope; ?>'
-                . '<'.'?php $scope = $__getScope('.$expression.'); ?>';
+                .'<'.'?php $__getScope = fn($scope = []) => $scope; ?>'
+                .'<'.'?php if (isset($scope)) $__scope = $scope; ?>'
+                .'<'.'?php $scope = $__getScope('.$expression.'); ?>';
         });
 
         Blade::directive('endunblaze', function () {
