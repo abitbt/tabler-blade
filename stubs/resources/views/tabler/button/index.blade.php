@@ -59,6 +59,9 @@
     // Auto-detect square from empty slot (Flux pattern)
     $square ??= $slot->isEmpty();
 
+    // Auto-detect iconOnly from empty slot with icon
+    $iconOnly ??= $square && ($iconLeading || $iconTrailing);
+
     // Auto-detect loading from Livewire (Flux pattern)
     $isTypeSubmitAndNotDisabledOnRender = $type === 'submit' && !$attributes->has('disabled');
     $isJsMethod = str_starts_with($attributes->whereStartsWith('wire:click')->first() ?? '', '$js.');
@@ -138,17 +141,17 @@
     @endif
 
     @if ($iconLeading && !$iconOnly)
-        <tabler:icon :name="$iconLeading" />
+        <tabler:icon :name="$iconLeading" :size="$size" />
     @endif
 
     @if ($iconOnly && $iconLeading)
-        <tabler:icon :name="$iconLeading" />
+        <tabler:icon :name="$iconLeading" :size="$size" />
     @elseif($slot->isNotEmpty())
         <span>{{ $slot }}</span>
     @endif
 
     @if ($iconTrailing)
-        <tabler:icon :name="$iconTrailing" class="icon-end" />
+        <tabler:icon :name="$iconTrailing" :size="$size" class="icon-end" />
     @endif
 
     @if ($kbd)
