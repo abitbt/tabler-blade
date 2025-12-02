@@ -11,6 +11,12 @@
     'required' => false,
     'disabled' => false,
 
+    // Validation
+    'valid' => false,
+    'invalid' => false,
+    'validLite' => false,
+    'invalidLite' => false,
+
     // Styling
     'inline' => false,
 ])
@@ -27,7 +33,13 @@
         ->add($inline ? 'form-check-inline' : '');
 
     // Build input classes
-    $inputClasses = Tabler::classes()->add('form-check-input')->add($attributes->pluck('class:input'));
+    $inputClasses = Tabler::classes()
+        ->add('form-check-input')
+        ->add($valid ? 'is-valid' : '')
+        ->add($invalid ? 'is-invalid' : '')
+        ->add($validLite ? 'is-valid-lite' : '')
+        ->add($invalidLite ? 'is-invalid-lite' : '')
+        ->add($attributes->pluck('class:input'));
 @endphp
 
 <label class="{{ $wrapperClasses }}" data-tabler-radio>

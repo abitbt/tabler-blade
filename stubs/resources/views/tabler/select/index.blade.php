@@ -4,7 +4,10 @@
     'searchable' => true,
     'size' => null,
     'enhanced' => true,
+    'valid' => false,
     'invalid' => null,
+    'validLite' => false,
+    'invalidLite' => false,
     'disabled' => false,
     'required' => false,
     'name' => $attributes->whereStartsWith('wire:model')->first(),
@@ -30,7 +33,10 @@
                 default => '',
             },
         )
-        ->add($invalid ? 'is-invalid' : '');
+        ->add($valid ? 'is-valid' : '')
+        ->add($invalid ? 'is-invalid' : '')
+        ->add($validLite ? 'is-valid-lite' : '')
+        ->add($invalidLite ? 'is-invalid-lite' : '');
 @endphp
 
 <select {{ $attributes->class($classes) }} id="{{ $id }}" @if ($multiple) multiple @endif

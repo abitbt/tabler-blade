@@ -14,6 +14,12 @@
     'disabled' => false,
     'readonly' => false,
 
+    // Validation
+    'valid' => false,
+    'invalid' => false,
+    'validLite' => false,
+    'invalidLite' => false,
+
     // Textarea specific
     'rows' => 3,
     'cols' => null,
@@ -26,7 +32,13 @@
     $id = $id ?? ($name ? $name : uniqid('textarea-'));
 
     // Build textarea classes
-    $textareaClasses = Tabler::classes()->add('form-control')->add($attributes->pluck('class:textarea'));
+    $textareaClasses = Tabler::classes()
+        ->add('form-control')
+        ->add($valid ? 'is-valid' : '')
+        ->add($invalid ? 'is-invalid' : '')
+        ->add($validLite ? 'is-valid-lite' : '')
+        ->add($invalidLite ? 'is-invalid-lite' : '')
+        ->add($attributes->pluck('class:textarea'));
 @endphp
 
 <textarea id="{{ $id }}" @if ($name) name="{{ $name }}" @endif

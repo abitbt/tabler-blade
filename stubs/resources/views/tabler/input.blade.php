@@ -22,6 +22,12 @@
     'disabled' => false,
     'readonly' => false,
 
+    // Validation
+    'valid' => false,
+    'invalid' => false,
+    'validLite' => false,
+    'invalidLite' => false,
+
     // Styling
     'size' => null, // 'sm', 'lg', null
     'variant' => null, // 'rounded', 'flush', 'light', 'dark', null
@@ -57,6 +63,10 @@
                 default => '',
             },
         )
+        ->add($valid ? 'is-valid' : '')
+        ->add($invalid ? 'is-invalid' : '')
+        ->add($validLite ? 'is-valid-lite' : '')
+        ->add($invalidLite ? 'is-invalid-lite' : '')
         ->add($attributes->pluck('class:input'));
 
     // Determine if we need icon wrapper

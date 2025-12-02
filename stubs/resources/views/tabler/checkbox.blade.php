@@ -11,6 +11,12 @@
     'required' => false,
     'disabled' => false,
 
+    // Validation
+    'valid' => false,
+    'invalid' => false,
+    'validLite' => false,
+    'invalidLite' => false,
+
     // Styling
     'inline' => false,
     'variant' => null, // 'single' for standalone checkboxes
@@ -29,7 +35,13 @@
         ->add($variant === 'single' ? 'form-check-single' : '');
 
     // Build input classes
-    $inputClasses = Tabler::classes()->add('form-check-input')->add($attributes->pluck('class:input'));
+    $inputClasses = Tabler::classes()
+        ->add('form-check-input')
+        ->add($valid ? 'is-valid' : '')
+        ->add($invalid ? 'is-invalid' : '')
+        ->add($validLite ? 'is-valid-lite' : '')
+        ->add($invalidLite ? 'is-invalid-lite' : '')
+        ->add($attributes->pluck('class:input'));
 @endphp
 
 <label class="{{ $wrapperClasses }}" data-tabler-checkbox>
