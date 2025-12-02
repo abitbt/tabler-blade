@@ -157,7 +157,8 @@
     $wireModel = $attributes->whereStartsWith('wire:model')->first();
 @endphp
 
-<div class="{{ $containerClass }}" data-tabler-date-picker>
+<div class="{{ $containerClass }}" data-litepicker data-litepicker-config="{{ base64_encode($configJson) }}"
+    data-litepicker-id="{{ $id }}" @if ($wireModel) data-litepicker-livewire @endif>
     @if ($label)
         <label for="{{ $id }}" class="{{ $labelClasses }}">
             {{ $label }}
@@ -230,63 +231,89 @@
 @once
     @push('scripts')
         <script>
-            // Check if Litepicker is loaded on page load
             document.addEventListener('DOMContentLoaded', function() {
+                // Check if Litepicker is loaded
                 if (typeof Litepicker === 'undefined') {
                     console.error('Litepicker library is not loaded. Please include Litepicker in your layout.');
+                    return;
+                }
+
+                // Initialize all Litepicker elements
+                function initializeDatepickers(root = document) {
+                    root.querySelectorAll('[data-litepicker]').forEach(function(container) {
+                        if (container.litepickerInstance) return; // Already initialized
+
+                        const pickerId = container.getAttribute('data-litepicker-id');
+                        const configBase64 = container.getAttribute('data-litepicker-config');
+                        const hasLivewire = container.hasAttribute('data-litepicker-livewire');
+
+                        if (!pickerId || !configBase64) {
+                            console.error('Litepicker: Missing required data attributes', container);
+                            return;
+                        }
+
+                        // Decode config from base64
+                        const config = JSON.parse(atob(configBase64));
+                        const element = document.getElementById(pickerId);
+
+                        if (!element) {
+                            console.error('Litepicker: Element not found:', pickerId);
+                            return;
+                        }
+
+                        config.element = element;
+
+                        // Initialize Litepicker
+                        const picker = new Litepicker(config);
+
+                        // Store instance on container
+                        container.litepickerInstance = picker;
+
+                        // Livewire integration
+                        if (hasLivewire) {
+                            picker.on('selected', (date1, date2) => {
+                                let value;
+
+                                if (config.singleMode) {
+                                    value = date1.format(config.format);
+                                } else {
+                                    value = date1.format(config.format) + ' - ' + date2.format(config
+                                        .format);
+                                }
+
+                                element.value = value;
+                                element.dispatchEvent(new Event('input', {
+                                    bubbles: true
+                                }));
+                                element.dispatchEvent(new Event('change', {
+                                    bubbles: true
+                                }));
+                            });
+                        }
+                    });
+                }
+
+                // Initialize on page load
+                initializeDatepickers();
+
+                // Livewire integration
+                if (window.Livewire) {
+                    Livewire.hook('morph.updated', ({
+                        el
+                    }) => {
+                        // Destroy old instances
+                        el.querySelectorAll('[data-litepicker]').forEach(function(container) {
+                            if (container.litepickerInstance) {
+                                container.litepickerInstance.destroy();
+                                delete container.litepickerInstance;
+                            }
+                        });
+
+                        // Re-initialize
+                        initializeDatepickers(el);
+                    });
                 }
             });
         </script>
     @endpush
 @endonce
-
-@push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            if (typeof Litepicker === 'undefined') {
-                console.error('Litepicker not loaded for #{{ $id }}');
-                return;
-            }
-
-            const config = {!! $configJson !!};
-            config.element = document.getElementById('{{ $id }}');
-
-            if (!config.element) {
-                console.error('Datepicker element not found: #{{ $id }}');
-                return;
-            }
-
-            const picker = new Litepicker(config);
-
-            @if ($wireModel)
-                // Livewire integration
-                const input = config.element;
-
-                picker.on('selected', (date1, date2) => {
-                    let value;
-
-                    if (config.singleMode) {
-                        value = date1.format(config.format);
-                    } else {
-                        value = date1.format(config.format) + ' - ' + date2.format(config.format);
-                    }
-
-                    input.value = value;
-                    input.dispatchEvent(new Event('input', {
-                        bubbles: true
-                    }));
-                    input.dispatchEvent(new Event('change', {
-                        bubbles: true
-                    }));
-                });
-
-                // Handle Livewire updates
-                window.addEventListener('livewire:navigated', function() {
-                    if (picker) {
-                        picker.destroy();
-                    }
-                });
-            @endif
-        });
-    </script>
-@endpush

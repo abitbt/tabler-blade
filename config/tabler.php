@@ -103,4 +103,37 @@ return [
         'default' => 'tabler::pagination.default',
         'simple' => 'tabler::pagination.simple',
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Theme Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configure default theme settings for the Tabler UI.
+    | These settings will be applied on initial page load if no user
+    | preference is stored in localStorage.
+    |
+    */
+    'theme' => [
+        // Default theme mode: 'light' or 'dark'
+        'mode' => 'dark',
+
+        // Color scheme/neutral palette base
+        // Options: 'gray', 'slate', 'zinc', 'neutral', 'stone', 'pink'
+        'base' => 'gray',
+
+        // Font family
+        // Options: 'sans-serif', 'serif', 'monospace', 'comic'
+        'font' => 'sans-serif',
+
+        // Primary color
+        // Options: 'blue', 'azure', 'indigo', 'purple', 'pink', 'red', 'orange',
+        //          'yellow', 'lime', 'green', 'teal', 'cyan', 'inverted'
+        'primary' => 'blue',
+
+        // Border radius scale
+        // Options: 0, 0.5, 1, 1.5, 2
+        // 0 = sharp corners, 1 = default (6px), 2 = double (12px)
+        'radius' => 1,
+    ],
 ];
