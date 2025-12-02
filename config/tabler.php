@@ -7,10 +7,43 @@ return [
     |--------------------------------------------------------------------------
     |
     | The prefix used for all Tabler Blade components.
-    | Default: 'tabler' (usage: <x-tabler::button>)
+    | Default: 'tabler' (usage: <tabler:button>)
     |
     */
     'prefix' => 'tabler',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Asset Management
+    |--------------------------------------------------------------------------
+    |
+    | Configure how Tabler CSS and JS assets are loaded.
+    |
+    */
+    'version' => '1.4.0',
+    'use_cdn' => true,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Icon Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configure icon handling for Tabler icons from @tabler/icons npm package.
+    |
+    */
+    'icons' => [
+        // Enable icon caching for better performance
+        'cache' => true,
+
+        // Default icon variant (outline, filled)
+        'default_variant' => 'outline',
+
+        // Default icon size class
+        'default_size' => null, // null, 'xs', 'sm', 'md', 'lg', 'xl'
+
+        // Fallback to icon font when SVG is not available
+        'fallback_to_font' => true,
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -26,58 +59,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Layout Configuration
-    |--------------------------------------------------------------------------
-    |
-    | Default settings for Tabler layouts.
-    |
-    */
-    'layout' => [
-        // Container class: 'container-xl', 'container-fluid', 'container', etc.
-        'container' => 'container-xl',
-
-        // Theme defaults (HTML data attributes)
-        'theme' => [
-            'base' => 'gray',
-            'font' => 'sans-serif',
-            'primary' => 'blue',
-            'radius' => '1',
-        ],
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Navbar Configuration
-    |--------------------------------------------------------------------------
-    |
-    | Default settings for horizontal navbar layouts.
-    |
-    */
-    'navbar' => [
-        'dark' => false,
-        'sticky' => false,
-        'transparent' => false,
-        'overlap' => false,
-        'breakpoint' => 'md',
-        'hide_brand' => false,
-        'hide_search' => false,
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
     | Sidebar Configuration
     |--------------------------------------------------------------------------
     |
-    | Default settings for vertical sidebar layouts.
+    | Settings for the collapsible sidebar component.
     |
     */
     'sidebar' => [
-        'dark' => true,
-        'position' => 'left',
-        'transparent' => false,
-        'background' => null,
-        'breakpoint' => 'lg',
-        'hide_brand' => false,
+        // Save collapsed state to localStorage
+        'persist_state' => true,
+
+        // Responsive breakpoint (px, rem, or viewport unit)
+        'breakpoint' => '1024px',
     ],
 
     /*
@@ -91,11 +84,8 @@ return [
     */
     'logo' => [
         // Path to custom logos (set to override default Tabler logo)
-        'small' => null, // 32x32 logo for compact layouts
-        'full' => null,  // Full logo for standard layouts
-
-        // Use embedded SVG if no custom logo is provided
-        'fallback_svg' => true,
+        'full' => null,       // Full logo (110×32 recommended)
+        'full_dark' => null,  // Dark mode version (optional)
 
         // Show application name next to logo
         'show_title' => false,
@@ -116,14 +106,34 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Flash Messages
+    | Theme Configuration
     |--------------------------------------------------------------------------
     |
-    | Configure automatic flash message display in layouts.
+    | Configure default theme settings for the Tabler UI.
+    | These settings will be applied on initial page load if no user
+    | preference is stored in localStorage.
     |
     */
-    'flash_messages' => [
-        'enabled' => true,
-        'session_keys' => ['success', 'error', 'warning', 'info'],
+    'theme' => [
+        // Default theme mode: 'light' or 'dark'
+        'mode' => 'dark',
+
+        // Color scheme/neutral palette base
+        // Options: 'gray', 'slate', 'zinc', 'neutral', 'stone', 'pink'
+        'base' => 'gray',
+
+        // Font family
+        // Options: 'sans-serif', 'serif', 'monospace', 'comic'
+        'font' => 'sans-serif',
+
+        // Primary color
+        // Options: 'blue', 'azure', 'indigo', 'purple', 'pink', 'red', 'orange',
+        //          'yellow', 'lime', 'green', 'teal', 'cyan', 'inverted'
+        'primary' => 'blue',
+
+        // Border radius scale
+        // Options: 0, 0.5, 1, 1.5, 2
+        // 0 = sharp corners, 1 = default (6px), 2 = double (12px)
+        'radius' => 1,
     ],
 ];

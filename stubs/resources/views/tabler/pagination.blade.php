@@ -1,360 +1,227 @@
-{{--
-    Pagination Component
-
-    Navigation for paginated content. Supports Laravel's pagination object
-    or manual page configuration.
-
-    @prop object|null $paginator - Laravel paginator object (optional)
-    @prop int|null $currentPage - Current page number (if not using paginator)
-    @prop int|null $totalPages - Total number of pages (if not using paginator)
-    @prop string|null $size - Pagination size: 'sm', 'lg'
-    @prop bool $simple - Use simple pagination (Previous/Next only)
-    @prop bool $firstLast - Show first/last page links
-    @prop bool $textButtons - Use text labels instead of icons
-    @prop int|null $onEachSide - Number of pages to show on each side of current page (default: 3, use for large page counts)
-    @prop string|null $prevTitle - Custom title for previous button (with subtitle)
-    @prop string|null $nextTitle - Custom title for next button (with subtitle)
-
-    @slot default - Custom pagination links (overrides automatic rendering)
-
-    Available CSS Classes (use via class="" attribute):
-
-    Pagination Styles:
-    - pagination-outline  - Outlined style with borders
-    - pagination-circle   - Circular/pill-shaped buttons
-
-    Pagination Sizes:
-    - pagination-sm      - Small pagination
-    - pagination-lg      - Large pagination
-
-    Pagination Item States:
-    - active             - Current/active page
-    - disabled           - Disabled link
-
-    Usage Examples:
-
-    With Laravel paginator:
-    <x-tabler::pagination :paginator="$users" />
-
-    Manual pagination:
-    <x-tabler::pagination :currentPage="3" :totalPages="10" />
-
-    Small pagination:
-    <x-tabler::pagination :paginator="$users" size="sm" />
-
-    Large pagination:
-    <x-tabler::pagination :paginator="$users" size="lg" />
-
-    Simple pagination (Prev/Next only):
-    <x-tabler::pagination :paginator="$users" simple />
-
-    With first/last links:
-    <x-tabler::pagination :currentPage="5" :totalPages="20" firstLast />
-
-    Text buttons instead of icons:
-    <x-tabler::pagination :currentPage="3" :totalPages="10" textButtons />
-
-    Outline style:
-    <x-tabler::pagination :paginator="$users" class="pagination-outline" />
-
-    Circle/pill style:
-    <x-tabler::pagination :paginator="$users" class="pagination-circle" />
-
-    Circle + outline combined:
-    <x-tabler::pagination :paginator="$users" class="pagination-circle pagination-outline" />
-
-    Large page count with ellipsis:
-    <x-tabler::pagination :currentPage="10" :totalPages="50" :onEachSide="2" />
-
-    With descriptive titles (for documentation navigation):
-    <x-tabler::pagination :currentPage="2" :totalPages="5" prevTitle="Getting Started" nextTitle="Components" />
-
-    Custom pagination:
-    <x-tabler::pagination>
-        <li class="page-item"><a class="page-link" href="#">Previous</a></li>
-        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-        <li class="page-item"><a class="page-link" href="#">2</a></li>
-        <li class="page-item"><a class="page-link" href="#">3</a></li>
-        <li class="page-item"><a class="page-link" href="#">Next</a></li>
-    </x-tabler::pagination>
-
-    Centered pagination:
-    <x-tabler::pagination :paginator="$users" class="justify-content-center" />
-
-    Right-aligned pagination:
-    <x-tabler::pagination :paginator="$users" class="justify-content-end" />
---}}
+@blaze
 
 @props([
+    // Data source - can be a Laravel paginator or manual configuration
     'paginator' => null,
-    'currentPage' => null,
-    'totalPages' => null,
-    'size' => null,
-    'simple' => false,
-    'firstLast' => false,
-    'textButtons' => false,
-    'onEachSide' => 3,
-    'prevTitle' => null,
-    'nextTitle' => null,
+
+    // Manual configuration (used if paginator not provided)
+    'currentPage' => 1,
+    'lastPage' => 1,
+    'total' => 0,
+    'perPage' => 15,
+    'onEachSide' => 3, // Number of pages to show on each side of current page
+
+    // URL configuration
+    'url' => null, // Base URL for pagination links
+    'queryString' => [], // Additional query parameters
+
+    // UI Options
+    'showFirstLast' => false, // Show first/last page links
+    'showText' => false, // Use text labels instead of icons
+    'showNumbers' => true, // Show page numbers
+    'alignment' => 'start', // start, center, end
+
+    // Style variants
+    'variant' => null, // outline, circle
+    'size' => null, // sm, lg
+
+    // Labels
+    'previousLabel' => 'Previous',
+    'nextLabel' => 'Next',
+    'firstLabel' => 'First',
+    'lastLabel' => 'Last',
+
+    // Icons (used when showText is false)
+    'previousIcon' => 'chevron-left',
+    'nextIcon' => 'chevron-right',
+    'firstIcon' => 'chevrons-left',
+    'lastIcon' => 'chevrons-right',
 ])
 
 @php
+    use Abitbt\TablerBlade\Tabler;
+    use Illuminate\Pagination\LengthAwarePaginator;
+
+    // If paginator is provided, extract data from it
+    if ($paginator instanceof LengthAwarePaginator) {
+        $currentPage = $paginator->currentPage();
+        $lastPage = $paginator->lastPage();
+        $total = $paginator->total();
+        $perPage = $paginator->perPage();
+        $url = $paginator->url(1);
+        $queryString = request()->query();
+    }
+
     // Build pagination classes
-    $classes = ['pagination'];
+    $paginationClasses = Tabler::classes()
+        ->add('pagination')
+        ->add($variant === 'outline' ? 'pagination-outline' : '')
+        ->add($variant === 'circle' || (is_array($variant) && in_array('circle', $variant)) ? 'pagination-circle' : '')
+        ->add($size === 'sm' ? 'pagination-sm' : '')
+        ->add($size === 'lg' ? 'pagination-lg' : '')
+        ->add($attributes->pluck('class'));
 
-    // Size modifier
-    if ($size) {
-        $classes[] = 'pagination-' . $size;
-    }
+    // Determine wrapper alignment
+    $alignmentClass = match ($alignment) {
+        'center' => 'justify-content-center',
+        'end' => 'justify-content-end',
+        default => 'justify-content-start',
+    };
 
-    // Determine pagination data
-    $current = $paginator ? $paginator->currentPage() : $currentPage;
-    $total = $paginator ? $paginator->lastPage() : $totalPages;
-    $hasPages = $total > 1;
+    // Calculate visible page range
+    $start = max(1, $currentPage - $onEachSide);
+    $end = min($lastPage, $currentPage + $onEachSide);
 
-    // Build page range with ellipsis for large page counts
-    $pageRange = [];
-    if ($total && !$simple) {
-        if ($total <= $onEachSide * 2 + 3) {
-            // Show all pages if total is small
-            $pageRange = range(1, $total);
-        } else {
-            // Show pages with ellipsis
-            $start = max(1, $current - $onEachSide);
-            $end = min($total, $current + $onEachSide);
-
-            // Adjust range if we're near the start or end
-        if ($current <= $onEachSide + 1) {
-            $end = min($total, $onEachSide * 2 + 1);
-        }
-        if ($current >= $total - $onEachSide) {
-            $start = max(1, $total - $onEachSide * 2);
-        }
-
-        $pageRange = [
-            'showStartEllipsis' => $start > 2,
-            'showEndEllipsis' => $end < $total - 1,
-            'start' => $start,
-            'end' => $end,
-            ];
+    // Adjust range to show consistent number of pages
+    if ($end - $start < $onEachSide * 2) {
+        if ($start === 1) {
+            $end = min($lastPage, $start + $onEachSide * 2);
+        } elseif ($end === $lastPage) {
+            $start = max(1, $end - $onEachSide * 2);
         }
     }
 
-    // Check if using descriptive titles
-    $hasDescriptiveTitles = $prevTitle || $nextTitle;
+    // Check if we need ellipsis
+    $showStartEllipsis = $start > 1;
+    $showEndEllipsis = $end < $lastPage;
+
+    // Helper function to generate URL
+    $generateUrl = function ($page) use ($url, $queryString, $paginator) {
+        if ($paginator) {
+            return $paginator->url($page);
+        }
+
+        if ($url) {
+            $query = array_merge($queryString, ['page' => $page]);
+            return $url . '?' . http_build_query($query);
+        }
+
+        return '#';
+    };
 @endphp
 
-@if ($slot->isNotEmpty())
-    {{-- Custom pagination links provided --}}
-    <ul {{ $attributes->merge(['class' => implode(' ', $classes)]) }}>
-        {{ $slot }}
-    </ul>
-@elseif($hasPages)
-    <ul {{ $attributes->merge(['class' => implode(' ', $classes)]) }}>
-        {{-- First Page Link --}}
-        @if ($firstLast)
-            @if ($paginator)
-                <li class="page-item {{ $paginator->onFirstPage() ? 'disabled' : '' }}">
-                    <a class="page-link{{ $textButtons ? ' page-text' : '' }}" href="{{ $paginator->url(1) }}"
-                        aria-label="First">
-                        @if ($textButtons)
-                            First
+@if ($lastPage > 1)
+    <div class="{{ $alignmentClass }}">
+        <ul {{ $attributes->except(['class'])->class($paginationClasses) }}>
+            {{-- First page link --}}
+            @if ($showFirstLast)
+                <li class="page-item {{ $currentPage === 1 ? 'disabled' : '' }}">
+                    <a class="page-link{{ $showText ? ' page-text' : '' }}"
+                        href="{{ $currentPage === 1 ? '#' : $generateUrl(1) }}"
+                        @if ($currentPage === 1) tabindex="-1" aria-disabled="true" @endif
+                        aria-label="{{ $firstLabel }}">
+                        @if ($showText)
+                            {{ $firstLabel }}
                         @else
-                            <x-tabler-chevrons-left class="icon" />
-                        @endif
-                    </a>
-                </li>
-            @else
-                <li class="page-item {{ $current <= 1 ? 'disabled' : '' }}">
-                    <a class="page-link{{ $textButtons ? ' page-text' : '' }}" href="#" aria-label="First">
-                        @if ($textButtons)
-                            First
-                        @else
-                            <x-tabler-chevrons-left class="icon" />
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="icon">
+                                <polyline points="11 17 6 12 11 7"></polyline>
+                                <polyline points="18 17 13 12 18 7"></polyline>
+                            </svg>
                         @endif
                     </a>
                 </li>
             @endif
-        @endif
 
-        {{-- Previous Page Link --}}
-        @if ($paginator)
-            <li
-                class="page-item{{ $paginator->onFirstPage() ? ' disabled' : '' }}{{ $hasDescriptiveTitles ? ' page-prev' : '' }}">
-                <a class="page-link{{ $textButtons ? ' page-text' : '' }}" href="{{ $paginator->previousPageUrl() }}"
-                    rel="prev" aria-label="Previous">
-                    @if ($prevTitle)
-                        <div class="page-item-subtitle">previous</div>
-                        <div class="page-item-title">{{ $prevTitle }}</div>
+            {{-- Previous page link --}}
+            <li class="page-item {{ $currentPage === 1 ? 'disabled' : '' }}">
+                <a class="page-link{{ $showText ? ' page-text' : '' }}"
+                    href="{{ $currentPage === 1 ? '#' : $generateUrl($currentPage - 1) }}"
+                    @if ($currentPage === 1) tabindex="-1" aria-disabled="true" @endif
+                    aria-label="{{ $previousLabel }}">
+                    @if ($showText)
+                        {{ $previousLabel }}
                     @else
-                        @if ($textButtons)
-                            Previous
-                        @else
-                            <x-tabler-chevron-left class="icon" />
-                            prev
-                        @endif
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" class="icon">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
                     @endif
                 </a>
             </li>
-        @else
-            <li
-                class="page-item{{ $current <= 1 ? ' disabled' : '' }}{{ $hasDescriptiveTitles ? ' page-prev' : '' }}">
-                <a class="page-link{{ $textButtons ? ' page-text' : '' }}" href="#" aria-label="Previous">
-                    @if ($prevTitle)
-                        <div class="page-item-subtitle">previous</div>
-                        <div class="page-item-title">{{ $prevTitle }}</div>
-                    @else
-                        @if ($textButtons)
-                            Previous
-                        @else
-                            <x-tabler-chevron-left class="icon" />
-                            prev
-                        @endif
-                    @endif
-                </a>
-            </li>
-        @endif
 
-        @if (!$simple && !$hasDescriptiveTitles)
-            {{-- Pagination Page Numbers --}}
-            @if ($paginator)
-                @if (is_array($pageRange) && isset($pageRange['showStartEllipsis']))
-                    {{-- Show page 1 if not in range --}}
-                    @if ($pageRange['showStartEllipsis'])
-                        <li class="page-item">
-                            <a class="page-link" href="{{ $paginator->url(1) }}">1</a>
-                        </li>
-                        <li class="page-item disabled">
-                            <span class="page-link">&hellip;</span>
-                        </li>
-                    @endif
-
-                    {{-- Show pages in range --}}
-                    @for ($page = $pageRange['start']; $page <= $pageRange['end']; $page++)
-                        <li class="page-item {{ $page == $current ? 'active' : '' }}">
-                            <a class="page-link" href="{{ $paginator->url($page) }}">{{ $page }}</a>
-                        </li>
-                    @endfor
-
-                    {{-- Show last page if not in range --}}
-                    @if ($pageRange['showEndEllipsis'])
-                        <li class="page-item disabled">
-                            <span class="page-link">&hellip;</span>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="{{ $paginator->url($total) }}">{{ $total }}</a>
-                        </li>
-                    @endif
-                @else
-                    {{-- Show all pages --}}
-                    @foreach ($pageRange as $page)
-                        <li class="page-item {{ $page == $current ? 'active' : '' }}">
-                            <a class="page-link" href="{{ $paginator->url($page) }}">{{ $page }}</a>
-                        </li>
-                    @endforeach
+            {{-- Page numbers --}}
+            @if ($showNumbers)
+                {{-- First page if not in range --}}
+                @if ($showStartEllipsis && $start > 2)
+                    <li class="page-item">
+                        <a class="page-link" href="{{ $generateUrl(1) }}">1</a>
+                    </li>
                 @endif
-            @else
-                {{-- Manual pagination --}}
-                @if (is_array($pageRange) && isset($pageRange['showStartEllipsis']))
-                    {{-- Show page 1 if not in range --}}
-                    @if ($pageRange['showStartEllipsis'])
-                        <li class="page-item {{ 1 == $current ? 'active' : '' }}">
-                            <a class="page-link" href="#">1</a>
-                        </li>
-                        <li class="page-item disabled">
-                            <span class="page-link">&hellip;</span>
-                        </li>
-                    @endif
 
-                    {{-- Show pages in range --}}
-                    @for ($page = $pageRange['start']; $page <= $pageRange['end']; $page++)
-                        <li class="page-item {{ $page == $current ? 'active' : '' }}">
-                            <a class="page-link" href="#">{{ $page }}</a>
-                        </li>
-                    @endfor
+                {{-- Start ellipsis --}}
+                @if ($showStartEllipsis)
+                    <li class="page-item">
+                        <span class="page-link disabled">&hellip;</span>
+                    </li>
+                @endif
 
-                    {{-- Show last page if not in range --}}
-                    @if ($pageRange['showEndEllipsis'])
-                        <li class="page-item disabled">
-                            <span class="page-link">&hellip;</span>
-                        </li>
-                        <li class="page-item {{ $total == $current ? 'active' : '' }}">
-                            <a class="page-link" href="#">{{ $total }}</a>
-                        </li>
-                    @endif
-                @else
-                    {{-- Show all pages --}}
-                    @foreach ($pageRange as $page)
-                        <li class="page-item {{ $page == $current ? 'active' : '' }}">
-                            <a class="page-link" href="#">{{ $page }}</a>
-                        </li>
-                    @endforeach
+                {{-- Page range --}}
+                @for ($page = $start; $page <= $end; $page++)
+                    <li class="page-item {{ $page === $currentPage ? 'active' : '' }}">
+                        @if ($page === $currentPage)
+                            <span class="page-link">{{ $page }}</span>
+                        @else
+                            <a class="page-link" href="{{ $generateUrl($page) }}">{{ $page }}</a>
+                        @endif
+                    </li>
+                @endfor
+
+                {{-- End ellipsis --}}
+                @if ($showEndEllipsis)
+                    <li class="page-item">
+                        <span class="page-link disabled">&hellip;</span>
+                    </li>
+                @endif
+
+                {{-- Last page if not in range --}}
+                @if ($showEndEllipsis && $end < $lastPage - 1)
+                    <li class="page-item">
+                        <a class="page-link" href="{{ $generateUrl($lastPage) }}">{{ $lastPage }}</a>
+                    </li>
                 @endif
             @endif
-        @endif
 
-        {{-- Next Page Link --}}
-        @if ($paginator)
-            <li
-                class="page-item{{ !$paginator->hasMorePages() ? ' disabled' : '' }}{{ $hasDescriptiveTitles ? ' page-next' : '' }}">
-                <a class="page-link{{ $textButtons ? ' page-text' : '' }}" href="{{ $paginator->nextPageUrl() }}"
-                    rel="next" aria-label="Next">
-                    @if ($nextTitle)
-                        <div class="page-item-subtitle">next</div>
-                        <div class="page-item-title">{{ $nextTitle }}</div>
+            {{-- Next page link --}}
+            <li class="page-item {{ $currentPage === $lastPage ? 'disabled' : '' }}">
+                <a class="page-link{{ $showText ? ' page-text' : '' }}"
+                    href="{{ $currentPage === $lastPage ? '#' : $generateUrl($currentPage + 1) }}"
+                    @if ($currentPage === $lastPage) tabindex="-1" aria-disabled="true" @endif
+                    aria-label="{{ $nextLabel }}">
+                    @if ($showText)
+                        {{ $nextLabel }}
                     @else
-                        @if ($textButtons)
-                            Next
-                        @else
-                            next
-                            <x-tabler-chevron-right class="icon" />
-                        @endif
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" class="icon">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
                     @endif
                 </a>
             </li>
-        @else
-            <li
-                class="page-item{{ $current >= $total ? ' disabled' : '' }}{{ $hasDescriptiveTitles ? ' page-next' : '' }}">
-                <a class="page-link{{ $textButtons ? ' page-text' : '' }}" href="#" aria-label="Next">
-                    @if ($nextTitle)
-                        <div class="page-item-subtitle">next</div>
-                        <div class="page-item-title">{{ $nextTitle }}</div>
-                    @else
-                        @if ($textButtons)
-                            Next
-                        @else
-                            next
-                            <x-tabler-chevron-right class="icon" />
-                        @endif
-                    @endif
-                </a>
-            </li>
-        @endif
 
-        {{-- Last Page Link --}}
-        @if ($firstLast)
-            @if ($paginator)
-                <li class="page-item {{ !$paginator->hasMorePages() ? 'disabled' : '' }}">
-                    <a class="page-link{{ $textButtons ? ' page-text' : '' }}" href="{{ $paginator->url($total) }}"
-                        aria-label="Last">
-                        @if ($textButtons)
-                            Last
+            {{-- Last page link --}}
+            @if ($showFirstLast)
+                <li class="page-item {{ $currentPage === $lastPage ? 'disabled' : '' }}">
+                    <a class="page-link{{ $showText ? ' page-text' : '' }}"
+                        href="{{ $currentPage === $lastPage ? '#' : $generateUrl($lastPage) }}"
+                        @if ($currentPage === $lastPage) tabindex="-1" aria-disabled="true" @endif
+                        aria-label="{{ $lastLabel }}">
+                        @if ($showText)
+                            {{ $lastLabel }}
                         @else
-                            <x-tabler-chevrons-right class="icon" />
-                        @endif
-                    </a>
-                </li>
-            @else
-                <li class="page-item {{ $current >= $total ? 'disabled' : '' }}">
-                    <a class="page-link{{ $textButtons ? ' page-text' : '' }}" href="#" aria-label="Last">
-                        @if ($textButtons)
-                            Last
-                        @else
-                            <x-tabler-chevrons-right class="icon" />
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="icon">
+                                <polyline points="13 17 18 12 13 7"></polyline>
+                                <polyline points="6 17 11 12 6 7"></polyline>
+                            </svg>
                         @endif
                     </a>
                 </li>
             @endif
-        @endif
-    </ul>
+        </ul>
+    </div>
 @endif

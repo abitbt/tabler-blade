@@ -1,119 +1,101 @@
-{{--
-    Avatar Component
-
-    User profile picture or placeholder with various sizes and styles.
-
-    @prop string|null $src - Image source URL
-    @prop string|null $alt - Alt text for image
-    @prop string|null $size - Avatar size: 'sm', 'md' (default), 'lg', 'xl', 'xxl'
-    @prop string|null $status - Status indicator: 'success', 'danger', 'warning', 'info', 'secondary'
-    @prop string|null $shape - Avatar shape: 'rounded' (default), 'rounded-circle'
-    @prop string|null $initials - Initials to display if no image (e.g., 'JD')
-    @prop string|null $icon - Tabler icon name (without 'tabler-' prefix) if no image or initials
-    @prop string|null $placeholder - Placeholder style if no content: 'icon' (default), 'initials'
-
-    @slot default - Custom avatar content (overrides image/initials/icon)
-
-    Available CSS Classes (use via class="" attribute):
-
-    Avatar Sizes:
-    - avatar-sm          - Small avatar (32px)
-    - avatar-md          - Medium avatar (48px, default)
-    - avatar-lg          - Large avatar (64px)
-    - avatar-xl          - Extra large avatar (80px)
-    - avatar-xxl         - XX Large avatar (128px)
-    - avatar-2xl         - 2X Large (same as xxl)
-
-    Avatar Shapes:
-    - rounded            - Slightly rounded corners (default)
-    - rounded-circle     - Perfect circle
-
-    Status Indicators:
-    - avatar-status      - Base status indicator class
-    - bg-success         - Green status dot
-    - bg-danger          - Red status dot
-    - bg-warning         - Yellow status dot
-    - bg-info            - Blue status dot
-    - bg-secondary       - Gray status dot
-
-    Placeholder Styles:
-    - avatar-placeholder - Placeholder avatar (no image)
-
-    Usage Examples:
-
-    Avatar with image:
-    <x-tabler::avatar src="https://example.com/avatar.jpg" alt="John Doe" />
-
-    Avatar with initials:
-    <x-tabler::avatar initials="JD" />
-
-    Avatar with icon:
-    <x-tabler::avatar icon="user" />
-
-    Small avatar:
-    <x-tabler::avatar src="/img/avatar.jpg" size="sm" />
-
-    Large circular avatar:
-    <x-tabler::avatar src="/img/avatar.jpg" size="lg" shape="rounded-circle" />
-
-    Avatar with status indicator:
-    <x-tabler::avatar src="/img/avatar.jpg" status="success" />
-
-    Avatar with custom content:
-    <x-tabler::avatar>
-        <img src="/img/avatar.jpg" alt="User" />
-    </x-tabler::avatar>
---}}
+@blaze
 
 @props([
+    // Content
     'src' => null,
-    'alt' => '',
-    'size' => 'md',
-    'status' => null,
-    'shape' => 'rounded',
+    'alt' => null,
     'initials' => null,
     'icon' => null,
-    'placeholder' => 'icon',
+
+    // Styling
+    'size' => 'md', // xs, sm, md, lg, xl
+    'rounded' => null, // null (default), 'circle', 'square', 'pill', or number (0, 1, 2, 3)
+    'color' => null, // bg-{color}-lt for initials/icons
+
+    // Status
+    'status' => null, // success, danger, warning, info, or any color
+    'statusText' => null,
+    'statusIcon' => null,
+
+    // Link behavior
+    'href' => null,
+    'as' => null,
 ])
 
 @php
-    // Build avatar classes
-    $classes = ['avatar'];
+    use Abitbt\TablerBlade\Tabler;
 
-    // Size
-    if ($size && $size !== 'md') {
-        $classes[] = 'avatar-' . $size;
-    }
+    // Determine element type
+    $element = $as ?? ($href ? 'a' : 'span');
 
-    // Shape
-    $classes[] = $shape;
+    // Build size classes
+    $sizeClass = match ($size) {
+        'xs' => 'avatar-xs',
+        'sm' => 'avatar-sm',
+        'lg' => 'avatar-lg',
+        'xl' => 'avatar-xl',
+        default => '',
+    };
 
-    // Placeholder style
-    if (!$src && !$slot->isNotEmpty()) {
-        $classes[] = 'avatar-placeholder';
-    }
+    // Build rounded classes
+    $roundedClass = match ($rounded) {
+        'circle' => 'rounded-circle',
+        'square', '0' => 'rounded-0',
+        'pill' => 'rounded-pill',
+        '1' => 'rounded-1',
+        '2' => 'rounded-2',
+        '3' => 'rounded-3',
+        default => '', // Default Tabler avatar border-radius
+    };
 
-    // Prepare icon component name
-    $iconComponent = $icon ? 'tabler-' . $icon : 'tabler-user';
+    // Build color classes
+    $colorClass = $color ? "bg-{$color}-lt" : '';
+
+    // Build classes
+    $classes = Tabler::classes()->add('avatar')->add($sizeClass)->add($roundedClass)->add($colorClass);
+
+    // Build status badge classes
+    $statusClass = match ($status) {
+        'success' => 'bg-success',
+        'danger', 'offline' => 'bg-danger',
+        'warning', 'busy' => 'bg-warning',
+        'info', 'online' => 'bg-success',
+        default => $status ? "bg-{$status}" : '',
+    };
+
+    // Determine content to display
+    $hasImage = !empty($src);
+    $hasInitials = !empty($initials);
+    $hasIcon = !empty($icon);
+    $hasContent = $slot->isNotEmpty();
 @endphp
 
-<span {{ $attributes->merge(['class' => implode(' ', $classes)]) }}>
-    @if ($slot->isNotEmpty())
-        {{-- Custom content --}}
-        {{ $slot }}
-    @elseif($src)
-        {{-- Image avatar --}}
-        <img src="{{ $src }}" alt="{{ $alt }}" />
-    @elseif($initials)
-        {{-- Initials avatar --}}
-        {{ strtoupper($initials) }}
-    @else
-        {{-- Icon placeholder --}}
-        <x-dynamic-component :component="$iconComponent" class="icon" />
+<{{ $element }} {{ $attributes->class($classes) }}
+    @if ($hasImage) style="background-image: url({{ $src }})" @endif
+    @if ($href) href="{{ $href }}" @endif
+    @if ($alt) title="{{ $alt }}" @endif data-tabler-avatar>
+
+    {{-- Status Badge --}}
+    @if ($status || $statusText || $statusIcon)
+        <span class="badge {{ $statusClass }}">
+            @if ($statusText)
+                {{ $statusText }}
+            @elseif ($statusIcon)
+                <tabler:icon :name="$statusIcon" class="avatar-status-icon" />
+            @endif
+        </span>
     @endif
 
-    @if ($status)
-        {{-- Status indicator --}}
-        <span class="badge bg-{{ $status }}"></span>
+    {{-- Content (initials, icon, or slot) --}}
+    @if (!$hasImage)
+        @if ($hasInitials)
+            {{ strtoupper(substr($initials, 0, 2)) }}
+        @elseif ($hasIcon)
+            <tabler:icon :name="$icon" class="avatar-icon" />
+        @elseif ($hasContent)
+            {{ $slot }}
+        @else
+            <tabler:icon name="user" class="avatar-icon" />
+        @endif
     @endif
-</span>
+    </{{ $element }}>
