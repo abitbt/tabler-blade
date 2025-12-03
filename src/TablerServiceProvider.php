@@ -84,7 +84,8 @@ class TablerServiceProvider extends ServiceProvider
 
     protected function bootComponentPath(): void
     {
-        // Register package components with <tabler:*> syntax
+        // Register package components with <tabler:*> syntax (via custom compiler)
+        // This also automatically supports native <x-tabler::*> syntax
         if (file_exists(resource_path('views/tabler'))) {
             Blade::anonymousComponentPath(resource_path('views/tabler'), 'tabler');
         }
@@ -94,21 +95,22 @@ class TablerServiceProvider extends ServiceProvider
 
     protected function bootDirectives(): void
     {
-        // Register @blaze directive as fallback if Blaze package is not installed
-        // This allows components to use @blaze without requiring livewire/blaze
-        Blade::directive('blaze', fn () => '');
+        // Only register @blaze directives if Livewire Blaze is not installed
+        // This prevents overriding real Blaze optimizations if the package is added
+        if (! class_exists('Livewire\Blaze\BlazeServiceProvider')) {
+            Blade::directive('blaze', fn () => '');
 
-        // Register @unblaze and @endunblaze directives for dynamic sections
-        Blade::directive('unblaze', function ($expression) {
-            return ''
-                .'<'.'?php $__getScope = fn($scope = []) => $scope; ?>'
-                .'<'.'?php if (isset($scope)) $__scope = $scope; ?>'
-                .'<'.'?php $scope = $__getScope('.$expression.'); ?>';
-        });
+            Blade::directive('unblaze', function ($expression) {
+                return ''
+                    .'<'.'?php $__getScope = fn($scope = []) => $scope; ?>'
+                    .'<'.'?php if (isset($scope)) $__scope = $scope; ?>'
+                    .'<'.'?php $scope = $__getScope('.$expression.'); ?>';
+            });
 
-        Blade::directive('endunblaze', function () {
-            return '<'.'?php if (isset($__scope)) { $scope = $__scope; unset($__scope); } ?>';
-        });
+            Blade::directive('endunblaze', function () {
+                return '<'.'?php if (isset($__scope)) { $scope = $__scope; unset($__scope); } ?>';
+            });
+        }
     }
 
     protected function bootTagCompiler(): void

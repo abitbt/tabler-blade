@@ -4,8 +4,41 @@ namespace Abitbt\TablerBlade;
 
 use Illuminate\View\Compilers\ComponentTagCompiler;
 
+/**
+ * Custom Blade component compiler for Tabler namespace.
+ *
+ * Extends Laravel's ComponentTagCompiler to handle <tabler:component-name>
+ * syntax and provides special handling for dynamic component delegation.
+ * Supports Laravel 12+ view namespace hashing (xxh128) and older versions (md5).
+ */
 class TablerTagCompiler extends ComponentTagCompiler
 {
+    /**
+     * Get the namespace hash for the current Laravel version.
+     *
+     * Laravel 12+ uses xxh128 hashing, older versions use md5.
+     * This centralizes version detection for easier maintenance.
+     *
+     * @return string Namespace hash ('xxh128:...' or 'md5:...')
+     */
+    protected function getNamespaceHash(): string
+    {
+        return version_compare(app()->version(), '12.0', '>=')
+            ? hash('xxh128', 'tabler')
+            : md5('tabler');
+    }
+
+    /**
+     * Compile a component string with attributes.
+     *
+     * Handles the special 'tabler::delegate-component' case for dynamic
+     * component rendering, where the actual component name is determined
+     * at runtime. Otherwise delegates to parent implementation.
+     *
+     * @param  string  $component  Component name (e.g., 'tabler::button')
+     * @param  array<string, mixed>  $attributes  Component attributes
+     * @return string Compiled PHP code for component rendering
+     */
     public function componentString(string $component, array $attributes): string
     {
         // A component that forwards all data, attributes, and named slots to another component...
@@ -14,9 +47,10 @@ class TablerTagCompiler extends ComponentTagCompiler
 
             $class = \Illuminate\View\AnonymousComponent::class;
 
-            // Laravel 12+ uses xxh128 hashing for views
+            $hash = $this->getNamespaceHash();
+
             return "<?php if (!Tabler::componentExists(\$name = {$component})) throw new \Exception(\"Tabler component [{\$name}] does not exist.\"); ?>##BEGIN-COMPONENT-CLASS##@component('{$class}', 'tabler::' . {$component}, [
-    'view' => (version_compare(app()->version(), '12.0', '>=') ? hash('xxh128', 'tabler') : md5('tabler')) . '::' . {$component},
+    'view' => '{$hash}' . '::' . {$component},
     'data' => \$__env->getCurrentComponentData(),
 ])
 <?php \$component->withAttributes(\$attributes->getAttributes()); ?>";
@@ -26,7 +60,14 @@ class TablerTagCompiler extends ComponentTagCompiler
     }
 
     /**
-     * Compile the opening tags within the given string.
+     * Compile opening Tabler component tags.
+     *
+     * Matches <tabler:component-name> tags with attributes and converts
+     * them to Blade component syntax. Handles @class, @style, bound
+     * attributes (:$var), and attribute merging.
+     *
+     * @param  string  $value  Blade template content
+     * @return string Compiled template with opening tags converted
      */
     protected function compileOpeningTags(string $value): string
     {
@@ -85,7 +126,14 @@ class TablerTagCompiler extends ComponentTagCompiler
     }
 
     /**
-     * Compile the self-closing tags within the given string.
+     * Compile self-closing Tabler component tags.
+     *
+     * Matches <tabler:component-name /> tags and converts them to
+     * Blade component syntax. Supports inline slot attributes for
+     * named slot rendering.
+     *
+     * @param  string  $value  Blade template content
+     * @return string Compiled template with self-closing tags converted
      */
     protected function compileSelfClosingTags(string $value): string
     {
@@ -153,7 +201,13 @@ class TablerTagCompiler extends ComponentTagCompiler
     }
 
     /**
-     * Compile the closing tags within the given string.
+     * Compile closing Tabler component tags.
+     *
+     * Matches </tabler:component-name> tags and converts them to
+     * Blade component closing syntax.
+     *
+     * @param  string  $value  Blade template content
+     * @return string Compiled template with closing tags converted
      */
     protected function compileClosingTags(string $value): string
     {

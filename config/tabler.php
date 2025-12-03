@@ -3,25 +3,14 @@
 return [
     /*
     |--------------------------------------------------------------------------
-    | Component Prefix
+    | Tabler Version
     |--------------------------------------------------------------------------
     |
-    | The prefix used for all Tabler Blade components.
-    | Default: 'tabler' (usage: <tabler:button>)
-    |
-    */
-    'prefix' => 'tabler',
-
-    /*
-    |--------------------------------------------------------------------------
-    | Asset Management
-    |--------------------------------------------------------------------------
-    |
-    | Configure how Tabler CSS and JS assets are loaded.
+    | The Tabler UI version this package is designed for.
+    | Used for compatibility tracking and documentation.
     |
     */
     'version' => '1.4.0',
-    'use_cdn' => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -32,30 +21,12 @@ return [
     |
     */
     'icons' => [
-        // Enable icon caching for better performance
-        'cache' => true,
-
         // Default icon variant (outline, filled)
         'default_variant' => 'outline',
 
-        // Default icon size class
-        'default_size' => null, // null, 'xs', 'sm', 'md', 'lg', 'xl'
-
-        // Fallback to icon font when SVG is not available
-        'fallback_to_font' => true,
+        // Default icon size class (null, 'xs', 'sm', 'md', 'lg', 'xl')
+        'default_size' => null,
     ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Component Overrides
-    |--------------------------------------------------------------------------
-    |
-    | Allow users to override package components by placing custom versions
-    | in the specified component_path directory.
-    |
-    */
-    'enable_overrides' => true,
-    'component_path' => resource_path('views/tabler'),
 
     /*
     |--------------------------------------------------------------------------

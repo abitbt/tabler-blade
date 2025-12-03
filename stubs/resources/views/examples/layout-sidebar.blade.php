@@ -64,7 +64,6 @@
         </tabler:main>
 
         @tablerScripts
-        @tablerSidebarScripts
     </body>
 
 </html>
